@@ -55,6 +55,8 @@ type (
 
        Profile   string `gorm:"type:longtext"`
 
+       Wages     float64  `json:"wages"`
+
    }
 
 )
@@ -78,7 +80,7 @@ func SignUp(c *gin.Context) {
 
    db := config.DB()
 
-   var userCheck entity.Users
+   var userCheck entity.Student
 
 
    // Check if the user with the provided email already exists
@@ -114,7 +116,7 @@ func SignUp(c *gin.Context) {
 
    // Create a new user
 
-   user := entity.Users{
+   user := entity.Student{
 
        FirstName: payload.FirstName,
 
@@ -131,6 +133,8 @@ func SignUp(c *gin.Context) {
        GenderID:  payload.GenderID,
 
        Profile:   payload.Profile,
+
+       Wages:   payload.Wages,
 
    }
 
@@ -155,7 +159,7 @@ func SignIn(c *gin.Context) {
 
    var payload Authen
 
-   var user entity.Users
+   var user entity.Student
 
 
    if err := c.ShouldBindJSON(&payload); err != nil {

@@ -169,6 +169,66 @@ function Report() {
 
     {
 
+      title: "DormitoryID",
+
+      key: "ID",
+
+      render: (record) => <>{record?.dormitory_id}</>,
+
+    },
+
+    {
+
+      title: "DormitoryName",
+
+      key: "DormName",
+
+      render: (record) => <>{record?.dorm?.DormName}</>,
+
+    },
+
+    {
+
+      title: "BooksID",
+
+      key: "ID",
+
+      render: (record) => <>{record?.books_id}</>,
+
+    },
+
+    {
+
+      title: "BookstudentID",
+
+      key: "ID",
+
+      render: (record) => <>{record?.book?.student_id}</>,
+
+    },
+
+    {
+
+      title: "RoomID",
+
+      key: "ID",
+
+      render: (record) => <>{record?.room_id}</>,
+
+    },
+
+    {
+
+      title: "RoomstudentID",
+
+      key: "Number",
+
+      render: (record) => <>{record?.room?.RoomNumber}</>,
+
+    },
+
+    {
+
       title: "Status",
 
       dataIndex: "status",

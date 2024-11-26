@@ -14,10 +14,12 @@ import Customer from "../../pages/customer";
 import Report from "../../pages/report";
 import Agree from "../../pages/Agree";
 import UI from "../../pages/UI";
+import Payment from "../../pages/payment";
 import AdminUI from "../../pages/adminui";
 import CustomerCreate from "../../pages/customer/create";
 import AdminCreate from "../../pages/Agree/create";
 import CustomerEdit from "../../pages/customer/edit";
+import QRcode from "../../pages/payment/QRcode";
 
 const { Header, Content, Footer } = Layout;
 
@@ -60,6 +62,9 @@ const FullLayout: React.FC = () => {
           <Menu.Item key="adminui">
             <Link to="/adminui" style={{ color: "white" }}>Adminui</Link>
           </Menu.Item>
+          <Menu.Item key="Payment">
+            <Link to="/payment" style={{ color: "white" }}>Payment</Link>
+          </Menu.Item>
         </Menu>
         <div>
           <Button
@@ -79,9 +84,11 @@ const FullLayout: React.FC = () => {
           <Route path="/customer/edit/:id" element={<CustomerEdit />} />
           <Route path="/report" element={<Report />} />
           <Route path="/agree" element={<Agree />} />
-          <Route path="//agree/create" element={<AdminCreate />} />
+          <Route path="/agree/create" element={<AdminCreate />} />
           <Route path="/ui" element={<UI />} />
           <Route path="/adminui" element={<AdminUI />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/payment/QRcode" element={<QRcode />} />
         </Routes>
       </Content>
     </Layout>

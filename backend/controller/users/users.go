@@ -19,7 +19,7 @@ import (
 func GetAll(c *gin.Context) {
 
 
-   var users []entity.Users
+   var users []entity.Student
 
 
    db := config.DB()
@@ -45,7 +45,7 @@ func Get(c *gin.Context) {
 
    ID := c.Param("id")
 
-   var user entity.Users
+   var user entity.Student
 
 
    db := config.DB()
@@ -77,7 +77,7 @@ func Get(c *gin.Context) {
 func Update(c *gin.Context) {
 
 
-   var user entity.Users
+   var user entity.Student
 
 
    UserID := c.Param("id")

@@ -1,4 +1,4 @@
-package report
+package payment
 
 
 import (
@@ -21,45 +21,45 @@ func GetAll(c *gin.Context) {
    db := config.DB()
 
 
-   var report []entity.Report
-   db.Preload("Users").Preload("Admin").Preload("Dormitory").Preload("Books").Preload("Room").Find(&report)
+   var payment []entity.Payment
+   db.Preload("Users").Find(&payment)
 
 
-   c.JSON(http.StatusOK, &report)
+   c.JSON(http.StatusOK, &payment)
 
 
 }
 
-func Delete(c *gin.Context) {
+// func Delete(c *gin.Context) {
 
 
-   id := c.Param("id")
+//    id := c.Param("id")
 
-   db := config.DB()
+//    db := config.DB()
 
-   if tx := db.Exec("DELETE FROM report WHERE id = ?", id); tx.RowsAffected == 0 {
+//    if tx := db.Exec("DELETE FROM report WHERE id = ?", id); tx.RowsAffected == 0 {
 
-       c.JSON(http.StatusBadRequest, gin.H{"error": "id not found"})
+//        c.JSON(http.StatusBadRequest, gin.H{"error": "id not found"})
 
-       return
+//        return
 
-   }
+//    }
 
-   c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
+//    c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
 
-}
+// }
 
 func Get(c *gin.Context) {
 
 
    ID := c.Param("id")
 
-   var report entity.Report
+   var payment entity.Payment
 
 
    db := config.DB()
 
-   results := db.Preload("Users").Preload("Admin").Preload("Dormitory").Preload("Books").Preload("Room").First(&report, ID)
+   results := db.Preload("Users").First(&payment, ID)
 
    if results.Error != nil {
 
@@ -69,7 +69,7 @@ func Get(c *gin.Context) {
 
    }
 
-   if report.ID == 0 {
+   if payment.ID == 0 {
 
        c.JSON(http.StatusNoContent, gin.H{})
 
@@ -77,7 +77,7 @@ func Get(c *gin.Context) {
 
    }
 
-   c.JSON(http.StatusOK, report)
+   c.JSON(http.StatusOK, payment)
 
 
 }
@@ -85,15 +85,15 @@ func Get(c *gin.Context) {
 func Update(c *gin.Context) {
 
 
-   var report entity.Report
+   var payment entity.Payment
 
 
-   ReportID := c.Param("id")
+   PaymentID := c.Param("id")
 
 
    db := config.DB()
 
-   result := db.First(&report, ReportID)
+   result := db.First(&payment, PaymentID)
 
    if result.Error != nil {
 
@@ -104,7 +104,7 @@ func Update(c *gin.Context) {
    }
 
 
-   if err := c.ShouldBindJSON(&report); err != nil {
+   if err := c.ShouldBindJSON(&payment); err != nil {
 
        c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request, unable to map payload"})
 
@@ -113,7 +113,7 @@ func Update(c *gin.Context) {
    }
 
 
-   result = db.Save(&report)
+   result = db.Save(&payment)
 
    if result.Error != nil {
 
@@ -129,10 +129,10 @@ func Update(c *gin.Context) {
 }
 
 func Create(c *gin.Context) {
-	var newReport entity.Report
+	var newPayment entity.Payment
 
 	// Bind the incoming JSON payload to the newAdmin struct
-	if err := c.ShouldBindJSON(&newReport); err != nil {
+	if err := c.ShouldBindJSON(&newPayment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request, unable to map payload"})
 		return
 	}
@@ -140,10 +140,10 @@ func Create(c *gin.Context) {
 	db := config.DB()
 
 	// Save the new admin to the database
-	if err := db.Create(&newReport).Error; err != nil {
+	if err := db.Create(&newPayment).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create admin"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Admin created successfully", "admin": newReport})
+	c.JSON(http.StatusOK, gin.H{"message": "Admin created successfully", "admin": newPayment})
 }

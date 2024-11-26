@@ -43,13 +43,19 @@ function Customers() {
     },
     {
       title: "ชื่อ",
-      dataIndex: "first_name",
-      key: "first_name",
+      dataIndex: "FirstName",
+      key: "FirstName",
     },
     {
       title: "นามสกุล",
       dataIndex: "last_name",
       key: "last_name",
+    },
+    {
+      title: "Wages",
+      dataIndex: "wages",
+      key: "wages",
+      render: (value) => value.toFixed(2),
     },
     {
       title: "อีเมล",

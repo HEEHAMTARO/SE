@@ -1,6 +1,8 @@
 export interface UsersInterface {
 
     ID?: number;
+
+    Wages?: number;
   
     FirstName?: string;
   

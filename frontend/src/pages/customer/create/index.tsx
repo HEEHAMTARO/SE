@@ -334,6 +334,34 @@ import {
                 </Form.Item>
   
               </Col>
+
+              <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+  
+              <Form.Item
+  label="Wages"
+  name="wages"
+  rules={[
+    {
+      required: true,
+      message: "กรุณากรอก Wages!",
+    },
+    {
+      type: 'number',
+      transform: (value) => parseFloat(value), // Ensures that the value is treated as a float
+      message: "Please enter a valid number",
+    },
+  ]}
+>
+  <InputNumber
+    min={0}
+    step={0.01} // Allows decimal places with two decimal precision
+    style={{ width: "100%" }}
+    defaultValue={0}
+    precision={2} // Optional: defines the number of decimal places
+  />
+</Form.Item>
+  
+              </Col>
   
               <Col xs={24} sm={24} md={24} lg={24} xl={12}>
   

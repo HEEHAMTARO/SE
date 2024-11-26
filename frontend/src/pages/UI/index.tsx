@@ -204,7 +204,7 @@ const ReportUI = () => {
         >
           <Form layout="vertical" onFinish={onFinish}>
             <Form.Item label="Name">
-              <div>{`${user?.first_name || ""} ${user?.last_name || ""}`}</div>
+              <div>{`${user?.FirstName || ""} ${user?.last_name || ""}`}</div>
             </Form.Item>
             <Form.Item label="Email">
               <div>{user?.email}</div>
@@ -298,7 +298,7 @@ const ReportUI = () => {
                   padding: "10px 0",
                 }}
               >
-                <p><strong>Name:</strong> {user?.first_name} {user?.last_name}</p>
+                <p><strong>Name:</strong> {user?.FirstName} {user?.last_name}</p>
                 <p><strong>Email:</strong> {user?.email}</p>
                 <p><strong>Age:</strong> {user?.age}</p>
                 <p><strong>BirthDay:</strong> {dayjs(report?.users?.birthday).format("DD/MM/YYYY")}</p>
@@ -308,6 +308,10 @@ const ReportUI = () => {
                 <p><strong>DateReport:</strong> {dayjs(report.dreport).format("DD/MM/YYYY")}</p>
                 <p><strong>Admin:</strong> {admin?.first_name} {admin?.last_name}</p>
                 <p><strong>DateApprove:</strong> {dayjs(report.dapprove).format("DD/MM/YYYY")}</p>
+                <p><strong>DormitoryID:</strong> {report?.dormitory_id}</p>
+                <p><strong>DormitoryName:</strong> {report?.dorm?.DormName}</p>
+                <p><strong>DormitoryName:</strong> {report?.book?.student_id}</p>
+                <p><strong>DormitoryName:</strong> {report?.room?.RoomNumber}</p>
               </div>
             );
           })

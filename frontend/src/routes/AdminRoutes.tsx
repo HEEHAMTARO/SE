@@ -19,6 +19,8 @@ const Agree = Loadable(lazy(() => import("../pages/Agree")));
 
 const UI = Loadable(lazy(() => import("../pages/UI")));
 
+const Payment = Loadable(lazy(() => import("../pages/payment")));
+
 const AdminUI = Loadable(lazy(() => import("../pages/adminui")));
 
 const CreateCustomer = Loadable(lazy(() => import("../pages/customer/create")));
@@ -26,6 +28,9 @@ const CreateCustomer = Loadable(lazy(() => import("../pages/customer/create")));
 const CreateAdmin = Loadable(lazy(() => import("../pages/Agree/create")));
 
 const EditCustomer = Loadable(lazy(() => import("../pages/customer/edit")));
+
+const QRcode = Loadable(lazy(() => import("../pages/payment/QRcode")));
+
 
 
 const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
@@ -141,6 +146,33 @@ const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
         ],
 
       },
+
+      {
+
+        path: "/payment",
+
+        children: [
+
+          {
+
+            path: "/payment",
+
+            element: <Payment />,
+
+          },
+
+          {
+
+            path: "/payment/QRcode",
+
+            element: <QRcode />,
+
+          },
+
+        ],
+
+      },
+
 
       {
 

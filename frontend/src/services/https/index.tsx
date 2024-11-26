@@ -6,6 +6,8 @@ import { ReportInterface } from "../../interfaces/Report";
 
 import { AdminInterface } from "../../interfaces/Admin";
 
+import { PaymentInterface } from "../../interfaces/Payment";
+
 import axios from "axios";
 
 const apiUrl = "http://localhost:8000";
@@ -83,6 +85,18 @@ async function GetAdmin() {
   return await axios
 
     .get(`${apiUrl}/admins`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function GetPayment() {
+
+  return await axios
+
+    .get(`${apiUrl}/payments`, requestOptions)
 
     .then((res) => res)
 
@@ -189,6 +203,18 @@ async function CreateReport(data: ReportInterface) {
 
 }
 
+async function CreatePayment(data: ReportInterface) {
+
+  return await axios
+
+    .post(`${apiUrl}/payment`, data, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
 async function UpdateReportById(id: string, data: ReportInterface) {
 
   return await axios
@@ -233,5 +259,9 @@ export {
   CreateReport,
 
   UpdateReportById,
+
+  GetPayment,
+
+  CreatePayment,
 
 };

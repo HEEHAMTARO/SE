@@ -9,11 +9,11 @@ import (
 
 )
 
-type Users struct {
+type Student struct {
 
    gorm.Model
 
-   FirstName string    `json:"first_name"`
+   FirstName string    
 
    LastName  string    `json:"last_name"`
 
@@ -30,5 +30,7 @@ type Users struct {
    GenderID  uint      `json:"gender_id"`
 
    Gender    *Genders  `gorm:"foreignKey: gender_id" json:"gender"`
+   
+   Wages  float64 `json:"wages"`
 
 }
