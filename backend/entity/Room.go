@@ -10,7 +10,7 @@ type Room struct {
 	Score int
 
 	//Floor []Floor `gorm:"foreignKey:RoomID"`
-	Dormitory []Dormitory `gorm:"foreignKey:ID"`
+	Dormitory []Dormitory `gorm:"foreignKey:RoomID"`
 
 	StatusID uint
 	Status Status `gorm:"foreignKey:StatusID"`

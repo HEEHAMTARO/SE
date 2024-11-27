@@ -50,37 +50,30 @@ func GetAll(c *gin.Context) {
 // }
 
 func Get(c *gin.Context) {
+    ID := c.Param("id")
 
+    // ตรวจสอบว่า ID เป็นเลขหรือไม่
+    var dormitory entity.Dormitory
+    db := config.DB()
 
-   ID := c.Param("id")
+    // ใช้ pointer ในการโหลดข้อมูล
+    results := db.First(&dormitory, ID)
 
-   var dormitory entity.Dormitory
+    if results.Error != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
+        return
+    }
 
+    // ตรวจสอบว่ามีข้อมูลใน dormitory หรือไม่
+    if dormitory.ID == 0 {
+        c.JSON(http.StatusNoContent, gin.H{})
+        return
+    }
 
-   db := config.DB()
-
-   results := db.First(dormitory, ID)
-
-   if results.Error != nil {
-
-       c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
-
-       return
-
-   }
-
-   if dormitory.ID == 0 {
-
-       c.JSON(http.StatusNoContent, gin.H{})
-
-       return
-
-   }
-
-   c.JSON(http.StatusOK, dormitory)
-
-
+    // ส่งข้อมูลกลับเป็น JSON
+    c.JSON(http.StatusOK, dormitory)
 }
+
 
 func Update(c *gin.Context) {
 

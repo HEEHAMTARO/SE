@@ -234,6 +234,8 @@ const Adminui = () => {
                 {/* เพิ่มข้อมูล Contact และ dReport */}
                 <p><strong>Contact:</strong> {rep.contact || "ไม่มีข้อมูล"}</p>
                 <p><strong>DateReport:</strong> {dayjs(rep.dreport).format("DD/MM/YYYY")}</p>
+                <p><strong>Contact:</strong> {rep.dorm?.DormName || "ไม่มีข้อมูล"}</p>
+                <p><strong>Contact:</strong> {rep.room?.RoomNumber || "ไม่มีข้อมูล"}</p>
 
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <Button danger onClick={() => handleReject(rep.ID)}>

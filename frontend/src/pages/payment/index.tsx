@@ -48,6 +48,11 @@ function Payment() {
     render: (value) => value.toFixed(2),
   },
   {
+    title: "ลำดับ",
+    dataIndex: "UsersID",
+    key: "Usersid",
+  },
+  {
     title: "First Name",
     key: "first_name",
     render: (record) => <>{record?.users?.first_name}</>,

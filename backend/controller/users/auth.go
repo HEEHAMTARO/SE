@@ -172,7 +172,7 @@ func SignIn(c *gin.Context) {
 
    // ค้นหา user ด้วย Username ที่ผู้ใช้กรอกเข้ามา
 
-   if err := config.DB().Raw("SELECT * FROM users WHERE email = ?", payload.Email).Scan(&user).Error; err != nil {
+   if err := config.DB().Raw("SELECT * FROM students WHERE email = ?", payload.Email).Scan(&user).Error; err != nil {
 
        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 

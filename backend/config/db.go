@@ -151,13 +151,14 @@ func SetupDatabase() {
   Dormitory := &entity.Dormitory{
    DormName: "หอป้ากับม้า",    
 	DormDescription: "ที่พักสะดวกสบาย",            
-	DormEquipment: "",             
+	DormEquipment: "",   
+   RoomID: 1,    
 }
 
 Room := &entity.Room{
    RoomNumber: "B321",
 	Dormitory: []entity.Dormitory{
-		{DormName: "หอม้ากับป้า", DormDescription: "ที่พักไม่สะดวกสบาย", Price: 50000},
+		{RoomID: 1,DormName: "หอม้ากับป้า", DormDescription: "ที่พักไม่สะดวกสบาย", Price: 50000},
 	},         
 }
 

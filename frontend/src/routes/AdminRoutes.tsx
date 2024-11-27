@@ -31,6 +31,18 @@ const EditCustomer = Loadable(lazy(() => import("../pages/customer/edit")));
 
 const QRcode = Loadable(lazy(() => import("../pages/payment/QRcode")));
 
+const Dormitory = Loadable(lazy(() => import("../pages/dormitory")));
+
+const CreateDormitory = Loadable(lazy(() => import("../pages/dormitory/create")));
+
+const Room = Loadable(lazy(() => import("../pages/room")));
+
+const CreateRoom = Loadable(lazy(() => import("../pages/room/create")));
+
+const Books = Loadable(lazy(() => import("../pages/books")));
+
+const CreateBooks = Loadable(lazy(() => import("../pages/books/create")));
+
 
 
 const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
@@ -185,6 +197,84 @@ const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
             path: "/adminui",
 
             element: <AdminUI />,
+
+          },
+
+        ],
+
+      },
+
+      {
+
+        path: "/dormitory",
+
+        children: [
+
+          {
+
+            path: "/dormitory",
+
+            element: <Dormitory />,
+
+          },
+
+          {
+
+            path: "/dormitory/create",
+
+            element: <CreateDormitory />,
+
+          },
+
+        ],
+
+      },
+
+      {
+
+        path: "/room",
+
+        children: [
+
+          {
+
+            path: "/room",
+
+            element: <Room />,
+
+          },
+
+          {
+
+            path: "/room/create",
+
+            element: <CreateRoom />,
+
+          },
+
+        ],
+
+      },
+
+      {
+
+        path: "/books",
+
+        children: [
+
+          {
+
+            path: "/books",
+
+            element: <Books />,
+
+          },
+
+          {
+
+            path: "/books/create",
+
+            element: <CreateBooks />,
 
           },
 

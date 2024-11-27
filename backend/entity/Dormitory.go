@@ -10,6 +10,6 @@ type Dormitory struct {
 	DormDescription    string            
 	DormEquipment      string    
 	DormPic      []byte           
-	Price      int      
-	 
+	Price      int   
+	RoomID uint   	 
 }

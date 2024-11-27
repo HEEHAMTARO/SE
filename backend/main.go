@@ -21,6 +21,12 @@ import (
 
    "example.com/sa-67-example/controller/payment"
 
+   "example.com/sa-67-example/controller/dormitory"
+
+   "example.com/sa-67-example/controller/room"
+
+   "example.com/sa-67-example/controller/books"
+
    "example.com/sa-67-example/middlewares"
 
 )
@@ -91,6 +97,26 @@ func main() {
        router.GET("/payments", payment.GetAll)
 
        router.PUT("/payment/:id", report.Update)
+
+       router.POST("/dormitory", dormitory.Create)
+
+       router.GET("/dormitorys", dormitory.GetAll)
+
+       router.GET("/dormitory/:id", dormitory.Get)
+
+       router.PUT("/dormitory/:id", dormitory.Update)
+
+       router.POST("/room", room.Create)
+
+       router.GET("/rooms", room.GetAll)
+
+       router.PUT("/room/:id", room.Update)
+
+       router.POST("/book", books.Create)
+
+       router.GET("/books", books.GetAll)
+
+       router.PUT("/book/:id", books.Update)
 
 
    }

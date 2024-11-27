@@ -109,6 +109,16 @@ function Report() {
 
     {
 
+      title: "AdminID",
+
+      dataIndex: "admin_id",
+
+      key: "admin_id",
+
+    },
+
+    {
+
       title: "DateReport",
 
       key: "dreport",

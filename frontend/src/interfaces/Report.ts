@@ -17,5 +17,11 @@ export interface ReportInterface {
     AdminID?: number;
 
     UsersID?: number;
+
+    DormitoryID?: number;
+
+    BooksID?: number;
+
+    RoomID?: number;
   
   }

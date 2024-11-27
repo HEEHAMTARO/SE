@@ -50,36 +50,24 @@ func GetAll(c *gin.Context) {
 // }
 
 func Get(c *gin.Context) {
+    ID := c.Param("id")
+    var room entity.Room
 
+    // ดึงข้อมูล Room พร้อม Dormitory และ Status
+    db := config.DB()
+    if err := db.Preload("Dormitory").Preload("Status").First(&room, "id = ?", ID).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+        return
+    }
 
-   ID := c.Param("id")
+    // ตรวจสอบว่า Room มีข้อมูลหรือไม่
+    if room.ID == 0 {
+        c.JSON(http.StatusNoContent, gin.H{})
+        return
+    }
 
-   var room entity.Room
-
-
-   db := config.DB()
-
-   results := db.Preload("Dormitory").Preload("Status").First(room, ID)
-
-   if results.Error != nil {
-
-       c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
-
-       return
-
-   }
-
-   if room.ID == 0 {
-
-       c.JSON(http.StatusNoContent, gin.H{})
-
-       return
-
-   }
-
-   c.JSON(http.StatusOK, room)
-
-
+    // ส่งข้อมูลกลับในรูปแบบ JSON
+    c.JSON(http.StatusOK, room)
 }
 
 func Update(c *gin.Context) {

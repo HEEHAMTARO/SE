@@ -8,6 +8,12 @@ import { AdminInterface } from "../../interfaces/Admin";
 
 import { PaymentInterface } from "../../interfaces/Payment";
 
+import { DormitoryInterface } from "../../interfaces/Dormitory";
+
+import { RoomInterface } from "../../interfaces/Room";
+
+import { BooksInterface } from "../../interfaces/Books";
+
 import axios from "axios";
 
 const apiUrl = "http://localhost:8000";
@@ -61,6 +67,42 @@ async function GetUsers() {
   return await axios
 
     .get(`${apiUrl}/users`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function GetDormitory() {
+
+  return await axios
+
+    .get(`${apiUrl}/dormitorys`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function GetRoom() {
+
+  return await axios
+
+    .get(`${apiUrl}/rooms`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function GetBooks() {
+
+  return await axios
+
+    .get(`${apiUrl}/books`, requestOptions)
 
     .then((res) => res)
 
@@ -215,6 +257,42 @@ async function CreatePayment(data: ReportInterface) {
 
 }
 
+async function CreateDormitory(data: DormitoryInterface) {
+
+  return await axios
+
+    .post(`${apiUrl}/dormitory`, data, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function CreateRoom(data: RoomInterface) {
+
+  return await axios
+
+    .post(`${apiUrl}/room`, data, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function CreateBooks(data: RoomInterface) {
+
+  return await axios
+
+    .post(`${apiUrl}/book`, data, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
 async function UpdateReportById(id: string, data: ReportInterface) {
 
   return await axios
@@ -263,5 +341,17 @@ export {
   GetPayment,
 
   CreatePayment,
+
+  GetDormitory,
+
+  GetRoom,
+
+  GetBooks,
+
+  CreateDormitory,
+
+  CreateRoom,
+
+  CreateBooks,
 
 };
