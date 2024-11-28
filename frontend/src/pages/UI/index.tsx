@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, message, Upload, DatePicker, Select } from "antd";
+import { Form, Input, Button, Card, message, Upload, DatePicker, Select, Divider } from "antd";
 import { useNavigate } from "react-router-dom";
 import { 
   GetUsers, 
@@ -9,7 +9,7 @@ import {
   GetRoom, 
   GetBooks, 
   GetDormitory 
-} from "../../services/https/index"; // ปรับเส้นทางให้ถูกต้อง
+} from "../../services/https/index"; // Update the path as needed
 import { UsersInterface } from "../../interfaces/IUser";
 import { ReportInterface } from "../../interfaces/Report";
 import { AdminInterface } from "../../interfaces/Admin"; 
@@ -32,10 +32,15 @@ const ReportUI = () => {
   const [books, setBooks] = useState<BooksInterface[]>([]);
   const [admins, setAdmins] = useState<AdminInterface[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [fileList, setFileList] = useState([]);
+  const [fileList, setFileList] = useState<any[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
-  const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const [selectedDormitory, setSelectedDormitory] = useState<number | null>(null);
+
+  // Calculate books_id automatically
+  const calculateBooksId = () => {
+    const matchingBook = books.find((b) => b.student_id === user?.ID);
+    return matchingBook ? matchingBook.ID : null;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,6 +67,16 @@ const ReportUI = () => {
   }, [messageApi]);
 
   const onChange = ({ fileList: newFileList }) => setFileList(newFileList);
+
+  const handleBeforeUpload = (file: any) => {
+    const isImage = file.type.startsWith('image/');
+    // Ensure the file is an image
+    if (!isImage) {
+      message.error('You can only upload image files!');
+    }
+    return isImage;
+  };
+
   const onPreview = async (file) => {
     let src = file.url;
     if (!src) {
@@ -84,11 +99,11 @@ const ReportUI = () => {
         users_id: Number(myId),
         note: values.note,
         contact: values.contact,
-        Photo: fileList[0]?.thumbUrl || null,
+        Photo: fileList[0]?.base64 || "", // Save the base64 string of the image
         dreport: values.dreport,
         room_id: selectedRoom,
         dormitory_id: selectedDormitory,
-        books_id: selectedBook,
+        books_id: calculateBooksId(), // Automatically calculate books_id
       };
 
       const response = await CreateReport(payload);
@@ -100,6 +115,21 @@ const ReportUI = () => {
       }
     } catch (error: any) {
       messageApi.open({ type: "error", content: error.message || "An error occurred" });
+    }
+  };
+
+  const handleImageChange = async ({ fileList: newFileList }) => {
+    if (newFileList.length > 0) {
+      const file = newFileList[0].originFileObj;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        newFileList[0].base64 = base64String; // Save the base64 string in the fileList
+        setFileList(newFileList);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFileList([]); // Clear the fileList if the user deletes the uploaded file
     }
   };
 
@@ -161,7 +191,7 @@ const ReportUI = () => {
             <Form.Item label="Room">
               <Select onChange={(value) => setSelectedRoom(value)} placeholder="Select a room">
                 {room
-                  .filter((r) => books.some((b) => b.RoomID === r.ID && b.student_id === user?.ID)) // Filter rooms based on RoomID in Books and student_id
+                  .filter((r) => books.some((b) => b.RoomID === r.ID && b.student_id === user?.ID))
                   .map((r) => (
                     <Option key={r.ID} value={r.ID}>
                       {r.RoomNumber}
@@ -170,49 +200,39 @@ const ReportUI = () => {
               </Select>
             </Form.Item>
             <Form.Item label="Dormitory">
-  <Select
-    onChange={(value) => setSelectedDormitory(value)}
-    placeholder="Select a dormitory"
-  >
-    {room
-      .filter((r) => books.some((b) => b.RoomID === r.ID && b.student_id === user?.ID)) // กรองเฉพาะ Room ที่เกี่ยวข้องกับ Books
-      .flatMap((r) => r.Dormitory) // ดึง Dormitory จาก Room
-      .map((dorm) => (
-        <Option key={dorm.ID} value={dorm.ID}>
-          {dorm.DormName}
-        </Option>
-      ))}
-  </Select>
-</Form.Item>
-            <Form.Item label="Books">
-              <Select onChange={(value) => setSelectedBook(value)} placeholder="Select a book">
-                {books
-                  .filter((b) => b.student_id === user?.ID) // Show books where student_id matches the user ID
-                  .map((b) => (
-                    <Option key={b.ID} value={b.ID}>
-                      {b.student_id}
+              <Select onChange={(value) => setSelectedDormitory(value)} placeholder="Select a dormitory">
+                {room
+                  .filter((r) => books.some((b) => b.RoomID === r.ID && b.student_id === user?.ID))
+                  .flatMap((r) => r.Dormitory)
+                  .map((dorm) => (
+                    <Option key={dorm.ID} value={dorm.ID}>
+                      {dorm.DormName}
                     </Option>
                   ))}
               </Select>
             </Form.Item>
-            <Form.Item label="Photo" name="Photo">
-              <ImgCrop rotationSlider>
-                <Upload
-                  listType="picture-card"
-                  fileList={fileList}
-                  onChange={onChange}
-                  onPreview={onPreview}
-                  beforeUpload={() => false}
-                  maxCount={1}
-                >
-                  {fileList.length < 1 && <div><PlusOutlined /><div style={{ marginTop: 8 }}>Upload</div></div>}
-                </Upload>
-              </ImgCrop>
-            </Form.Item>
+            <Form.Item label="Profile Photo" name="Photo">
+  <Upload
+    listType="picture-card"
+    fileList={fileList}
+    onChange={handleImageChange}
+    onPreview={onPreview}
+    beforeUpload={() => false} // Prevent auto upload
+    maxCount={1} // Restrict to one file upload
+    accept="image/*" // Ensure only images can be uploaded
+  >
+    {fileList.length < 1 && (
+                      <div>
+                        <PlusOutlined />
+                        <div style={{ marginTop: 8 }}>อัพโหลด</div>
+                      </div>
+                    )}
+  </Upload>
+</Form.Item>
             <Form.Item>
             <Button type="primary" htmlType="submit" block disabled={reports.some((report) => report.status === "approve")}>
-      Submit
-    </Button>
+                Submit
+              </Button>
             </Form.Item>
           </Form>
         </Card>
@@ -229,34 +249,64 @@ const ReportUI = () => {
       >
         <h2>Reports</h2>
         {reports.length > 0 ? (
-          reports.map((report) => {
-            const admin = admins.find((admin) => admin.ID === report.admin_id); // Find the admin by ID
-            return (
-              <div
-                key={report.id}
-                style={{
-                  borderBottom: "1px solid #eee",
-                  padding: "10px 0",
-                }}
-              >
-                <p><strong>Name:</strong> {user?.FirstName} {user?.last_name}</p>
-                <p><strong>Email:</strong> {user?.email}</p>
-                <p><strong>Age:</strong> {user?.age}</p>
-                <p><strong>BirthDay:</strong> {dayjs(report?.users?.birthday).format("DD/MM/YYYY")}</p>
-                <p><strong>Status:</strong> {report.status || "รออนุมัติ"}</p>
-                <p><strong>Notes:</strong> {report.note}</p>
-                <p><strong>Contact:</strong> {report.contact}</p>
-                <p><strong>DateReport:</strong> {dayjs(report.dreport).format("DD/MM/YYYY")}</p>
-                <p><strong>Admin:</strong> {admin?.first_name} {admin?.last_name}</p>
-                <p><strong>DateApprove:</strong> {dayjs(report.dapprove).format("DD/MM/YYYY")}</p>
-                <p><strong>DormitoryName:</strong> {report?.dorm?.DormName}</p>
-                <p><strong>RoomNumber:</strong> {report?.room?.RoomNumber}</p>
-              </div>
-            );
-          })
-        ) : (
-          <p>No reports available.</p>
-        )}
+  reports.some(report => report.status === "approve") ? (
+    reports
+      .filter(report => report.status === "approve")
+      .map((report) => {
+        const admin = admins.find((admin) => admin.ID === report.admin_id); // Find the admin by ID
+        return (
+          <div
+            key={report.id}
+            style={{
+              borderBottom: "1px solid #eee",
+              padding: "10px 0",
+            }}
+          >
+            <p><strong>Name:</strong> {user?.FirstName} {user?.last_name}</p>
+            <p><strong>Email:</strong> {user?.email}</p>
+            <p><strong>Age:</strong> {user?.age}</p>
+            <p><strong>BirthDay:</strong> {dayjs(report?.users?.birthday).format("DD/MM/YYYY")}</p>
+            <p><strong>Status:</strong> {report.status || "รออนุมัติ"}</p>
+            <p><strong>Notes:</strong> {report.note}</p>
+            <p><strong>Contact:</strong> {report.contact}</p>
+            <p><strong>DateReport:</strong> {dayjs(report.dreport).format("DD/MM/YYYY")}</p>
+            <p><strong>Admin:</strong> {admin?.first_name} {admin?.last_name}</p>
+            <p><strong>DateApprove:</strong> {dayjs(report.dapprove).format("DD/MM/YYYY")}</p>
+            <p><strong>DormitoryName:</strong> {report?.dorm?.DormName}</p>
+            <p><strong>RoomNumber:</strong> {report?.room?.RoomNumber}</p>
+          </div>
+        );
+      })
+  ) : (
+    reports.map((report) => {
+      const admin = admins.find((admin) => admin.ID === report.admin_id); // Find the admin by ID
+      return (
+        <div
+          key={report.id}
+          style={{
+            borderBottom: "1px solid #eee",
+            padding: "10px 0",
+          }}
+        >
+          <p><strong>Name:</strong> {user?.FirstName} {user?.last_name}</p>
+          <p><strong>Email:</strong> {user?.email}</p>
+          <p><strong>Age:</strong> {user?.age}</p>
+          <p><strong>BirthDay:</strong> {dayjs(report?.users?.birthday).format("DD/MM/YYYY")}</p>
+          <p><strong>Status:</strong> {report.status || "รออนุมัติ"}</p>
+          <p><strong>Notes:</strong> {report.note}</p>
+          <p><strong>Contact:</strong> {report.contact}</p>
+          <p><strong>DateReport:</strong> {dayjs(report.dreport).format("DD/MM/YYYY")}</p>
+          <p><strong>Admin:</strong> {admin?.first_name} {admin?.last_name}</p>
+          <p><strong>DateApprove:</strong> {dayjs(report.dapprove).format("DD/MM/YYYY")}</p>
+          <p><strong>DormitoryName:</strong> {report?.dorm?.DormName}</p>
+          <p><strong>RoomNumber:</strong> {report?.room?.RoomNumber}</p>
+        </div>
+      );
+    })
+  )
+) : (
+  <p>No reports available.</p>
+)}
       </div>
     </div>
   );

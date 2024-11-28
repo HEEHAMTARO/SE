@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Card, message } from "antd";
+import { Input, Button, Card, message, Modal, Image } from "antd";
 import { GetAdmin, GetReport, UpdateReportById } from "../../services/https/index";
 import { AdminInterface } from "../../interfaces/Admin";
 import { ReportInterface } from "../../interfaces/Report";
@@ -10,12 +10,13 @@ const Adminui = () => {
   const [report, setReport] = useState<ReportInterface[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
 
+
   // ฟังก์ชันดึงข้อมูลรายงาน
   const fetchReport = async () => {
     try {
       const res = await GetReport();
       if (res.status === 200) {
-        setReport(res.data.filter((rep) => rep.status !== "not approve")); // กรองข้อมูลที่ status ไม่ใช่ "not approve"
+        setReport(res.data.filter((rep) => rep.status !== "not approve"));
       } else {
         messageApi.open({
           type: "error",
@@ -58,6 +59,7 @@ const Adminui = () => {
     fetchAdmin();
     fetchReport();
   }, []);
+  
 
   // ฟังก์ชันจัดการการยืนยันรายงาน (approve)
   const handleApprove = async (reportId: number) => {
@@ -154,7 +156,7 @@ const Adminui = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)", // แสดง 4 คอลัมน์ต่อแถว
+          gridTemplateColumns: "repeat(4, 1fr)",
           gap: "20px",
           marginTop: "60px",
           justifyContent: "center",
@@ -164,88 +166,95 @@ const Adminui = () => {
         }}
       >
         {report.filter((rep) => !["approve", "not approve"].includes(rep.status)).length === 0 ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gridColumn: "span 4", // ทำให้ div นี้ขยายเต็ม 4 คอลัมน์
-              height: "100%", // ทำให้มีความสูงเต็มที่ของ grid
-              textAlign: "center", // จัดข้อความให้กลาง
-            }}
-          >
-            <p>ไม่มีรายงานที่รอการตรวจสอบ</p>
-          </div>
-        ) : (
-          report
-            .filter((rep) => !["approve", "not approve"].includes(rep.status))
-            .map((rep) => (
-              <Card
-                key={rep.ID}
-                style={{
-                  textAlign: "center",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                }}
-              >
-                <div
-                  style={{
-                    width: "100px",
-                    height: "100px",
-                    backgroundColor: "#888",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: "50%",
-                    margin: "0 auto 10px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={rep.users.Profile || "https://via.placeholder.com/100"}
-                    alt={rep.users.Profile}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                </div>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gridColumn: "span 4",
+      height: "100%",
+      textAlign: "center",
+    }}
+  >
+    <p>ไม่มีรายงานที่รอการตรวจสอบ</p>
+  </div>
+) : (
+  report
+    .filter((rep) => !["approve", "not approve"].includes(rep.status))
+    .filter((rep) => {
+      // Check if any previous report for the same user has been approved
+      const hasApprovedReport = report.some(
+        (r) => r.users_id === rep.users_id && r.status === "approve"
+      );
+      return !hasApprovedReport; // Exclude this report if an approved report already exists
+    })
+    .map((rep) => (
+      <Card
+        key={rep.ID}
+        style={{
+          textAlign: "center",
+          borderRadius: "8px",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+        }}
+      >
+        <div
+          style={{
+            width: "100px",
+            height: "100px",
+            backgroundColor: "#888",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: "50%",
+            margin: "0 auto 10px",
+            overflow: "hidden",
+          }}
+        >
+          <img
+            src={rep.users.Profile || "https://via.placeholder.com/100"}
+            alt={rep.users.Profile}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
 
-                <h3>
-                  {rep.users
-                    ? `${rep.users.first_name} ${rep.users.last_name}`
-                    : "ไม่พบข้อมูล"}
-                </h3>
-                <p>{rep.users?.email}</p>
-                <p><strong>Photo:</strong></p>
-                <img
-                    src={rep.Photo || "https://via.placeholder.com/100"}
-                    alt={rep.Photo}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                
-                <p><strong>Note:</strong></p>
-                <Input.TextArea
-                  value={rep.note || "ไม่มีหมายเหตุ"}
-                  rows={2}
-                  style={{
-                    marginBottom: "10px",
-                  }}
-                  disabled
-                />
+        <h3>
+          {rep.users ? `${rep.users.FirstName} ${rep.users.last_name}` : "ไม่พบข้อมูล"}
+        </h3>
+        <p>{rep.users?.email}</p>
 
-                {/* เพิ่มข้อมูล Contact และ dReport */}
-                <p><strong>Contact:</strong> {rep.contact || "ไม่มีข้อมูล"}</p>
-                <p><strong>DateReport:</strong> {dayjs(rep.dreport).format("DD/MM/YYYY")}</p>
-                <p><strong>Contact:</strong> {rep.dorm?.DormName || "ไม่มีข้อมูล"}</p>
-                <p><strong>Contact:</strong> {rep.room?.RoomNumber || "ไม่มีข้อมูล"}</p>
+        <p><strong>Photo:</strong></p>
+        <Image
+          src={rep.Photo}
+          alt="Report"
+          style={{
+            display: "block",
+            width: "200px",
+            height: "200px",
+          }}
+        />
+        <p><strong>Note:</strong></p>
+        <Input.TextArea
+          value={rep.note || "ไม่มีหมายเหตุ"}
+          rows={2}
+          style={{ marginBottom: "10px" }}
+          disabled
+        />
 
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <Button danger onClick={() => handleReject(rep.ID)}>
-                    ปฏิเสธ
-                  </Button>
-                  <Button type="primary" onClick={() => handleApprove(rep.ID)}>
-                    ยอมรับ
-                  </Button>
-                </div>
-              </Card>
+        {/* เพิ่มข้อมูล Contact และ dReport */}
+        <p><strong>Contact:</strong> {rep.contact || "ไม่มีข้อมูล"}</p>
+        <p><strong>DateReport:</strong> {dayjs(rep.dreport).format("DD/MM/YYYY")}</p>
+        <p><strong>Contact:</strong> {rep.dorm?.DormName || "ไม่มีข้อมูล"}</p>
+        <p><strong>Contact:</strong> {rep.room?.RoomNumber || "ไม่มีข้อมูล"}</p>
+
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <Button danger onClick={() => handleReject(rep.ID)}>
+            ปฏิเสธ
+          </Button>
+          <Button type="primary" onClick={() => handleApprove(rep.ID)}>
+            ยอมรับ
+          </Button>
+        </div>
+      </Card>
             ))
         )}
       </div>

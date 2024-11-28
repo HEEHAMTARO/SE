@@ -139,16 +139,6 @@ function Report() {
 
     {
 
-      title: "AdminID",
-
-      key: "ID",
-
-      render: (record) => <>{record?.admin?.ID}</>,
-
-    },
-
-    {
-
       title: "Admin",
 
       key: "admin",
@@ -207,15 +197,15 @@ function Report() {
 
     },
 
-    {
+    // {
 
-      title: "BookstudentID",
+    //   title: "BookstudentID",
 
-      key: "ID",
+    //   key: "ID",
 
-      render: (record) => <>{record?.book?.student_id}</>,
+    //   render: (record) => <>{record?.book?.student_id}</>,
 
-    },
+    // },
 
     {
 

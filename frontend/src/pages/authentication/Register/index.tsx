@@ -31,6 +31,8 @@ import {
   import { GetGender, CreateUser } from "../../../services/https";
   
   import { UsersInterface } from "../../../interfaces/IUser";
+
+  import { GenderInterface } from "../../../interfaces/Gender";
   
   import logo from "../../../assets/logo.png";
   

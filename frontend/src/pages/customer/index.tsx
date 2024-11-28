@@ -35,7 +35,7 @@ function Customers() {
     {
       title: "รูปประจำตัว",
       dataIndex: "Profile",
-      key: "profile",
+      key: "Profile",
       width: "15%",
       render: (text, record, index) => (
         <img src={record.Profile} className="w3-left w3-circle w3-margin-right" width="100%" />
