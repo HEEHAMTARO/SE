@@ -17,4 +17,12 @@ type Payment struct {
 
    Wages 	float64  `json:"wages"`
 
+   DormitoryID  uint      `json:"dormitory_id"`
+
+   Dormitory    *Dormitory  `gorm:"foreignKey: dormitory_id" json:"dorm"`
+
+   StatusDor string    `json:"statusdor"`
+
+   StatusStudent string    `json:"statusstudent"`
+
 }

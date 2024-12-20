@@ -27,6 +27,10 @@ import (
 
    "example.com/sa-67-example/controller/books"
 
+   "example.com/sa-67-example/controller/enrollment"
+
+   "example.com/sa-67-example/controller/course"
+
    "example.com/sa-67-example/middlewares"
 
 )
@@ -76,7 +80,7 @@ func main() {
 
        router.GET("/user/:id", users.Get)
 
-       router.DELETE("/user/:id", users.Delete)
+       router.DELETE("/user/:id", users.Delete) //users
 
        router.GET("/reports", report.GetAll)
 
@@ -86,17 +90,33 @@ func main() {
 
        router.POST("/report", report.Create)
 
-       router.PUT("/report/:id", report.Update)
+       router.PUT("/report/:id", report.Update) //report
+
+       router.GET("/enrollment/:id", enrollment.Get)
+
+       router.GET("/enrollments", enrollment.GetAll)
+
+       router.DELETE("/enrollment/:id", enrollment.Delete)
+
+       router.POST("/enrollment", enrollment.Create) //enrollment
+
+       router.GET("/course/:id", course.Get)
+
+       router.GET("/courses", course.GetAll)
+
+       router.DELETE("/course/:id", course.Delete)
+
+       router.POST("/course", course.Create) //course
 
        router.GET("/admins", admin.GetAll)
 
-       router.POST("/admin", admin.Create)
+       router.POST("/admin", admin.Create) //admin
 
        router.POST("/payment", payment.Create)
 
        router.GET("/payments", payment.GetAll)
 
-       router.PUT("/payment/:id", report.Update)
+       router.PUT("/payment/:id", payment.Update) //payment
 
        router.POST("/dormitory", dormitory.Create)
 
@@ -104,19 +124,19 @@ func main() {
 
        router.GET("/dormitory/:id", dormitory.Get)
 
-       router.PUT("/dormitory/:id", dormitory.Update)
+       router.PUT("/dormitory/:id", dormitory.Update) //dormitory
 
        router.POST("/room", room.Create)
 
        router.GET("/rooms", room.GetAll)
 
-       router.PUT("/room/:id", room.Update)
+       router.PUT("/room/:id", room.Update) //room
 
        router.POST("/book", books.Create)
 
        router.GET("/books", books.GetAll)
 
-       router.PUT("/book/:id", books.Update)
+       router.PUT("/book/:id", books.Update) //books
 
 
    }

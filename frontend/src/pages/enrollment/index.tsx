@@ -6,18 +6,22 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 
 import type { ColumnsType } from "antd/es/table";
 
-import { GetUsers, DeleteUsersById, GetReport } from "../../services/https/index";
+import { GetUsers, DeleteUsersById, GetReport, GetCourse, GetEnrollment } from "../../services/https/index";
 
 import { UsersInterface } from "../../interfaces/IUser";
 
 import { ReportInterface } from "../../interfaces/Report";
+
+import { CourseInterface } from "../../interfaces/Course";
+
+import { EnrollmentInterface } from "../../interfaces/Enrollment";
 
 import { Link, useNavigate } from "react-router-dom";
 
 import dayjs from "dayjs";
 
 
-function Report() {
+function Enrollment() {
 
   const navigate = useNavigate();
 
@@ -25,12 +29,16 @@ function Report() {
 
   const [report, setReport] = useState<ReportInterface[]>([]);
 
+  const [course, setCourse] = useState<CourseInterface[]>([]);
+
+  const [enrollment, setEnrollment] = useState<EnrollmentInterface[]>([]);
+
   const [messageApi, contextHolder] = message.useMessage();
 
   const myId = localStorage.getItem("id");
 
 
-  const columns: ColumnsType<ReportInterface> = [
+  const columns: ColumnsType<EnrollmentInterface> = [
 
     {
 
@@ -75,177 +83,38 @@ function Report() {
       key: "id",
 
     },
-
-    {
-      title: "รูปประจำตัว",
-      dataIndex: "photo",
-      key: "photo",
-      width: "15%",
-      render: (text, record, index) => (
-        <img src={record.Photo} className="w3-left w3-circle w3-margin-right" width="100%" />
-      )
-    },
   
-
-    {
-
-      title: "Note",
-
-      dataIndex: "note",
-
-      key: "Note",
-
-    },
-
-    {
-
-      title: "Contact",
-
-      dataIndex: "contact",
-
-      key: "contact",
-
-    },
-
-    {
-
-      title: "AdminID",
-
-      dataIndex: "admin_id",
-
-      key: "admin_id",
-
-    },
-
-    {
-
-      title: "DateReport",
-
-      key: "dreport",
-
-      render: (record) => <>{dayjs(record.dreport).format("DD/MM/YYYY")}</>,
-
-    },
-
-    {
-
-      title: "DateApprove",
-
-      key: "dapprove",
-
-      render: (record) => <>{dayjs(record.dapprove).format("DD/MM/YYYY")}</>,
-
-    },
-
-    {
-
-      title: "Admin",
-
-      key: "admin",
-
-      render: (record) => <>{record?.admin?.first_name}</>,
-
-    },
-
-    {
-
-      title: "Users",
-
-      key: "users",
-
-      render: (record) => <>{record?.users?.first_name}</>,
-
-    },
-
-    {
-
-      title: "UsersID",
-
-      key: "id",
-
-      render: (record) => <>{record?.users?.ID}</>,
-
-    },
-
-    {
-
-      title: "DormitoryID",
-
-      key: "ID",
-
-      render: (record) => <>{record?.dormitory_id}</>,
-
-    },
-
-    {
-
-      title: "DormitoryName",
-
-      key: "DormName",
-
-      render: (record) => <>{record?.dorm?.DormName}</>,
-
-    },
-
-    {
-
-      title: "Price",
-
-      key: "Price",
-
-      render: (record) => <>{record?.dorm?.Price}</>,
-
-    },
-
-    {
-
-      title: "BooksID",
-
-      key: "ID",
-
-      render: (record) => <>{record?.books_id}</>,
-
-    },
-
-    // {
-
-    //   title: "BookstudentID",
-
-    //   key: "ID",
-
-    //   render: (record) => <>{record?.book?.student_id}</>,
-
-    // },
-
-    {
-
-      title: "RoomID",
-
-      key: "ID",
-
-      render: (record) => <>{record?.room_id}</>,
-
-    },
-
-    {
-
-      title: "RoomstudentID",
-
-      key: "Number",
-
-      render: (record) => <>{record?.room?.RoomNumber}</>,
-
-    },
 
     {
 
       title: "Status",
 
-      dataIndex: "status",
+      dataIndex: "Status",
 
-      key: "status",
+      key: "Status",
 
     },
+
+    {
+
+      title: "CourseID",
+
+      dataIndex: "CourseID",
+
+      key: "CourseID",
+
+    },
+
+    {
+
+      title: "StudentID",
+
+      dataIndex: "StudentID",
+
+      key: "StudentID",
+
+    },
+
 
     {
 
@@ -362,12 +231,68 @@ function Report() {
 
   };
 
+  const getCourse = async () => {
+
+    let res = await GetCourse();
+
+   
+
+    if (res.status == 200) {
+
+      setCourse(res.data);
+
+    } else {
+
+      setCourse([]);
+
+      messageApi.open({
+
+        type: "error",
+
+        content: res.data.error,
+
+      });
+
+    }
+
+  };
+
+  const getEnrollment = async () => {
+
+    let res = await GetEnrollment();
+
+   
+
+    if (res.status == 200) {
+
+      setEnrollment(res.data);
+
+    } else {
+
+      setEnrollment([]);
+
+      messageApi.open({
+
+        type: "error",
+
+        content: res.data.error,
+
+      });
+
+    }
+
+  };
+
 
   useEffect(() => {
 
     getUsers();
     
     getReport();
+
+    getCourse();
+
+    getEnrollment();
 
   }, []);
 
@@ -391,7 +316,7 @@ function Report() {
 
           <Space>
 
-            <Link to="/customer/create">
+            <Link to="/enrollment/create">
 
               <Button type="primary" icon={<PlusOutlined />}>
 
@@ -419,7 +344,7 @@ function Report() {
 
           columns={columns}
 
-          dataSource={report}
+          dataSource={enrollment}
 
           style={{ width: "100%", overflow: "scroll" }}
 
@@ -434,4 +359,4 @@ function Report() {
 }
 
 
-export default Report;
+export default Enrollment;

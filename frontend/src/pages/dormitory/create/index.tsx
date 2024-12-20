@@ -184,9 +184,9 @@ import {
   
                 <Form.Item
   
-                  label="DormEquipment"
+                  label="DormType"
   
-                  name="DormEquipment"
+                  name="DormType"
   
                   rules={[
   
@@ -194,7 +194,7 @@ import {
   
                       required: true,
   
-                      message: "กรุณากรอก DormEquipment  !",
+                      message: "กรุณากรอก DormType  !",
   
                     },
   
@@ -234,7 +234,7 @@ import {
   
                     min={0}
   
-                    max={99}
+                    max={99999}
   
                     defaultValue={0}
   

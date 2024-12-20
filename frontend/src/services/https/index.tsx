@@ -14,6 +14,10 @@ import { RoomInterface } from "../../interfaces/Room";
 
 import { BooksInterface } from "../../interfaces/Books";
 
+import { EnrollmentInterface } from "../../interfaces/Enrollment";
+
+import { CourseInterface } from "../../interfaces/Course";
+
 import axios from "axios";
 
 const apiUrl = "http://localhost:8000";
@@ -79,6 +83,30 @@ async function GetDormitory() {
   return await axios
 
     .get(`${apiUrl}/dormitorys`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function GetEnrollment() {
+
+  return await axios
+
+    .get(`${apiUrl}/enrollments`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function GetCourse() {
+
+  return await axios
+
+    .get(`${apiUrl}/courses`, requestOptions)
 
     .then((res) => res)
 
@@ -183,6 +211,18 @@ async function UpdateUsersById(id: string, data: UsersInterface) {
 
 }
 
+async function UpdatePaymentById(id: string, data: PaymentInterface) {
+
+  return await axios
+
+    .put(`${apiUrl}/payment/${id}`, data, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
 
 async function DeleteUsersById(id: string) {
 
@@ -245,6 +285,31 @@ async function CreateReport(data: ReportInterface) {
 
 }
 
+async function CreateEnrollment(data: EnrollmentInterface) {
+
+  return await axios
+
+    .post(`${apiUrl}/enrollment`, data, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+async function CreateCourse(data: CourseInterface) {
+
+  return await axios
+
+    .post(`${apiUrl}/course`, data, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
+
 async function CreatePayment(data: ReportInterface) {
 
   return await axios
@@ -281,7 +346,7 @@ async function CreateRoom(data: RoomInterface) {
 
 }
 
-async function CreateBooks(data: RoomInterface) {
+async function CreateBooks(data: BooksInterface) {
 
   return await axios
 
@@ -353,5 +418,15 @@ export {
   CreateRoom,
 
   CreateBooks,
+
+  UpdatePaymentById,
+
+  GetEnrollment,
+
+  GetCourse,
+
+  CreateCourse,
+
+  CreateEnrollment,
 
 };

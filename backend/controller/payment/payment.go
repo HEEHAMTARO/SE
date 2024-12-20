@@ -12,6 +12,7 @@ import (
 
    "github.com/gin-gonic/gin"
 
+
 )
 
 
@@ -22,7 +23,7 @@ func GetAll(c *gin.Context) {
 
 
    var payment []entity.Payment
-   db.Preload("Users").Find(&payment)
+   db.Preload("Users").Preload("Dormitory").Find(&payment)
 
 
    c.JSON(http.StatusOK, &payment)
@@ -59,7 +60,7 @@ func Get(c *gin.Context) {
 
    db := config.DB()
 
-   results := db.Preload("Users").First(&payment, ID)
+   results := db.Preload("Users").Preload("Dormitory").First(&payment, ID)
 
    if results.Error != nil {
 
@@ -85,48 +86,49 @@ func Get(c *gin.Context) {
 func Update(c *gin.Context) {
 
 
-   var payment entity.Payment
+    var payment entity.Payment
+ 
+ 
+    PaymentID := c.Param("id")
+ 
+ 
+    db := config.DB()
+ 
+    result := db.First(&payment, PaymentID)
+ 
+    if result.Error != nil {
+ 
+        c.JSON(http.StatusNotFound, gin.H{"error": "id not found"})
+ 
+        return
+ 
+    }
+ 
+ 
+    if err := c.ShouldBindJSON(&payment); err != nil {
+ 
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request, unable to map payload"})
+ 
+        return
+ 
+    }
+ 
+ 
+    result = db.Save(&payment)
+ 
+    if result.Error != nil {
+ 
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+ 
+        return
+ 
+    }
+ 
+ 
+    c.JSON(http.StatusOK, gin.H{"message": "Updated successful"})
+ 
+ }
 
-
-   PaymentID := c.Param("id")
-
-
-   db := config.DB()
-
-   result := db.First(&payment, PaymentID)
-
-   if result.Error != nil {
-
-       c.JSON(http.StatusNotFound, gin.H{"error": "id not found"})
-
-       return
-
-   }
-
-
-   if err := c.ShouldBindJSON(&payment); err != nil {
-
-       c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request, unable to map payload"})
-
-       return
-
-   }
-
-
-   result = db.Save(&payment)
-
-   if result.Error != nil {
-
-       c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
-
-       return
-
-   }
-
-
-   c.JSON(http.StatusOK, gin.H{"message": "Updated successful"})
-
-}
 
 func Create(c *gin.Context) {
 	var newPayment entity.Payment

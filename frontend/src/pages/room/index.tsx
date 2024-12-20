@@ -29,19 +29,9 @@ function Room() {
       key: "Score",
     },
     {
-      title: "Dormitories",
-      key: "Dormitory",
-      render: (_, record) => (
-        <ul>
-          {record.Dormitory.map((dorm, index) => (
-            <li key={index}>
-              <strong>Name:</strong> {dorm.DormName} <br />
-              <strong>Description:</strong> {dorm.DormDescription} <br />
-              <strong>Price:</strong> {dorm.Price}
-            </li>
-          ))}
-        </ul>
-      ),
+      title: "DormitoryID",
+      dataIndex: "DormitoryID",
+      key: "DormitoryID",
     },
     {
       title: "การจัดการ",

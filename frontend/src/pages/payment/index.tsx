@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Space, Table, Button, Col, Row, Divider, message } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
-import { GetUsers, DeleteUsersById, GetReport, CreatePayment, GetPayment } from "../../services/https/index";
+import { GetUsers, DeleteUsersById, GetReport, CreatePayment, GetPayment, GetDormitory, UpdatePaymentById} from "../../services/https/index";
 import { UsersInterface } from "../../interfaces/IUser";
+import { DormitoryInterface } from "../../interfaces/Dormitory";
 import { ReportInterface } from "../../interfaces/Report";
 import { PaymentInterface } from "../../interfaces/Payment";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ import dayjs from "dayjs";
 function Payment() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<UsersInterface[]>([]);
+  const [dormitory, setDormitory] = useState<DormitoryInterface[]>([]);
   const [payment, setPayment] = useState<PaymentInterface[]>([]);
   const [report, setReport] = useState<ReportInterface[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null); // Track selected user ID
@@ -42,20 +44,30 @@ function Payment() {
     key: "id",
   },
   {
+    title: "statusdor",
+    dataIndex: "statusdor",
+    key: "statusdor",
+  },
+  {
+    title: "statusstudent",
+    dataIndex: "statusstudent",
+    key: "statusstudent",
+  },
+  {
     title: "WagesPayment",
     dataIndex: "wages",
     key: "wages",
     render: (value) => value.toFixed(2),
   },
   {
-    title: "ลำดับ",
-    dataIndex: "UsersID",
-    key: "Usersid",
+    title: "UserID",
+    key: "UserID",
+    render: (record) => <>{record?.users?.ID}</>,
   },
   {
     title: "First Name",
-    key: "first_name",
-    render: (record) => <>{record?.users?.first_name}</>,
+    key: "FirstName",
+    render: (record) => <>{record?.users?.FirstName}</>,
   },
   {
     title: "Last Name",
@@ -73,6 +85,26 @@ function Payment() {
     title: "User ID",
     key: "user_id",
     render: (record) => <>{record?.users?.ID}</>,
+  },
+  {
+
+    title: "DormitoryID",
+
+    key: "ID",
+
+    render: (record) => <>{record?.dormitory_id}</>,
+
+  },
+  {
+
+    title: "Price",
+
+    key: "Price",
+
+    render: (record) => (
+      <>{record?.dorm?.Price ? record.dorm.Price.toFixed(2) : "0.00"}</>
+    ),
+
   },
   {
     title: "",
@@ -123,19 +155,49 @@ function Payment() {
     }
   };
 
-  const getPayment = async () => {
-    let res = await GetPayment();
-    
+  const getDormitory = async () => {
+    let res = await GetDormitory();
+    const myId = localStorage.getItem("id");
+  
     if (res.status === 200) {
-      // Display all payment records (no filtering by myId)
-      setPayment(res.data);
+      // Filter users by the logged-in user's ID (myId)
+      const filteredDormitory = res.data.filter((dormitory) => String(dormitory.ID) === myId);
+      setDormitory(filteredDormitory);
     } else {
-      setPayment([]); // Set payment to an empty array in case of error
+      setDormitory([]);
       messageApi.open({
         type: "error",
         content: res.data.error,
       });
     }
+  };
+
+  
+
+  const getPayment = async () => {
+
+    let res = await GetPayment();
+
+   
+
+    if (res.status == 200) {
+
+      setPayment(res.data);
+
+    } else {
+
+      setPayment([]);
+
+      messageApi.open({
+
+        type: "error",
+
+        content: res.data.error,
+
+      });
+
+    }
+
   };
 
   // Function to create payment using the wages of the logged-in user
@@ -157,10 +219,14 @@ function Payment() {
       return;
     }
 
+    
+
     const paymentData = {
       users_id: user.ID,
       wages: user.wages, // Using the logged-in user's wages
     };
+
+    
 
     let res = await CreatePayment(paymentData);
     if (res.status == 200) {
@@ -177,9 +243,54 @@ function Payment() {
     }
   };
 
+  const handleCreateDorPayment = async () => {
+    if (!myId) {
+      messageApi.open({
+        type: "error",
+        content: "ไม่พบข้อมูลผู้ใช้งาน",
+      });
+      return;
+    }
+  
+    // Find dormitory by ID
+    const dorm = dormitory.find((dorm) => String(dorm.ID) === myId);
+    if (!dorm) {
+      messageApi.open({
+        type: "error",
+        content: "ไม่พบข้อมูลหอพักที่ถูกต้อง",
+      });
+      return;
+    }
+  
+    // Prepare payment data
+    const paymentDormData = {
+      dormitory_id: dorm.ID,
+      wages: dorm.Price, // Include the user's ID if needed
+    };
+  
+    try {
+      let res = await CreatePayment(paymentDormData);
+      if (res.status === 200) {
+        messageApi.open({
+          type: "success",
+          content: "การชำระเงินถูกสร้างสำเร็จ",
+        });
+        setPayment([...payment, res.data]); // Update the payment list
+      } else {
+        throw new Error(res.data.error);
+      }
+    } catch (err) {
+      messageApi.open({
+        type: "error",
+        content: err.message || "เกิดข้อผิดพลาด",
+      });
+    }
+  };
+
   useEffect(() => {
     getPayment();
     getUsers();
+    getDormitory();
   }, []);
 
   return (
@@ -198,6 +309,15 @@ function Payment() {
               onClick={handleCreatePayment} // Call handleCreatePayment when the button is clicked
             >
               ไปยังหน้า QRcode
+            </Button>
+            </Link>
+            <Link to="/payment/Dorqrcode">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleCreateDorPayment} // Call handleCreatePayment when the button is clicked
+            >
+              ไปยังหน้า Dorqrcode
             </Button>
             </Link>
           </Space>

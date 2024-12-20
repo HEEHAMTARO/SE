@@ -30,9 +30,9 @@ function Dormitory() {
       key: "DormDescription",
     },
     {
-      title: "สิ่งอำนวยความสะดวก",
-      dataIndex: "DormEquipment",
-      key: "DormEquipment",
+      title: "ชนิดหอพัก",
+      dataIndex: "DormType",
+      key: "DormType",
     },
     {
       title: "ราคา",

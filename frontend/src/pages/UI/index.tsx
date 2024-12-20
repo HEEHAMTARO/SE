@@ -66,16 +66,16 @@ const ReportUI = () => {
     fetchData();
   }, [messageApi]);
 
-  const onChange = ({ fileList: newFileList }) => setFileList(newFileList);
+  // const onChange = ({ fileList: newFileList }) => setFileList(newFileList);
 
-  const handleBeforeUpload = (file: any) => {
-    const isImage = file.type.startsWith('image/');
-    // Ensure the file is an image
-    if (!isImage) {
-      message.error('You can only upload image files!');
-    }
-    return isImage;
-  };
+  // const handleBeforeUpload = (file: any) => {
+  //   const isImage = file.type.startsWith('image/');
+  //   // Ensure the file is an image
+  //   if (!isImage) {
+  //     message.error('You can only upload image files!');
+  //   }
+  //   return isImage;
+  // };
 
   const onPreview = async (file) => {
     let src = file.url;
@@ -119,6 +119,7 @@ const ReportUI = () => {
   };
 
   const handleImageChange = async ({ fileList: newFileList }) => {
+    setFileList(newFileList);
     if (newFileList.length > 0) {
       const file = newFileList[0].originFileObj;
       const reader = new FileReader();
@@ -178,8 +179,11 @@ const ReportUI = () => {
             <Form.Item label="Note" name="note" rules={[{ required: true, message: "Please enter a note" }]}>
               <Input.TextArea placeholder="Enter your notes" />
             </Form.Item>
-            <Form.Item label="Contact" name="contact" rules={[{ required: true, message: "Please enter contact info" }]}>
-              <Input placeholder="Enter your contact" />
+            <Form.Item label="Contact" name="contact" rules={[{ required: true, message: "Please enter contact info" }, {
+      pattern: /^0\d{9}$/,
+      message: "Contact must be 10 digits and start with 0 (e.g., 0967211316)",
+    },]}>
+              <Input placeholder="Enter your contact" maxLength={10}/>
             </Form.Item>
             <Form.Item
               label="Report Date"
@@ -188,7 +192,7 @@ const ReportUI = () => {
             >
               <DatePicker style={{ width: "100%" }} />
             </Form.Item>
-            <Form.Item label="Room">
+            <Form.Item label="Room" name="room" rules={[{ required: true, message: "Please select a room" }]}>
               <Select onChange={(value) => setSelectedRoom(value)} placeholder="Select a room">
                 {room
                   .filter((r) => books.some((b) => b.RoomID === r.ID && b.student_id === user?.ID))
@@ -199,7 +203,7 @@ const ReportUI = () => {
                   ))}
               </Select>
             </Form.Item>
-            <Form.Item label="Dormitory">
+            <Form.Item label="Dormitory" name="dormitory" rules={[{ required: true, message: "Please select a Dormitory" }]}>
               <Select onChange={(value) => setSelectedDormitory(value)} placeholder="Select a dormitory">
                 {room
                   .filter((r) => books.some((b) => b.RoomID === r.ID && b.student_id === user?.ID))
@@ -211,7 +215,18 @@ const ReportUI = () => {
                   ))}
               </Select>
             </Form.Item>
-            <Form.Item label="Profile Photo" name="Photo">
+            <Form.Item
+  label="Photo (ควรถ่ายจากหน้าห้องเข้ามาให้เห็นในห้อง)"
+  name="Photo"
+  rules={[
+    {
+      validator: (_, value) =>
+        fileList.length > 0
+          ? Promise.resolve()
+          : Promise.reject(new Error("โปรดอัพโหลดรูปภาพ")),
+    },
+  ]}
+>
   <Upload
     listType="picture-card"
     fileList={fileList}
@@ -222,13 +237,14 @@ const ReportUI = () => {
     accept="image/*" // Ensure only images can be uploaded
   >
     {fileList.length < 1 && (
-                      <div>
-                        <PlusOutlined />
-                        <div style={{ marginTop: 8 }}>อัพโหลด</div>
-                      </div>
-                    )}
+      <div>
+        <PlusOutlined />
+        <div style={{ marginTop: 8 }}>อัพโหลด</div>
+      </div>
+    )}
   </Upload>
 </Form.Item>
+
             <Form.Item>
             <Button type="primary" htmlType="submit" block disabled={reports.some((report) => report.status === "approve")}>
                 Submit
@@ -271,7 +287,12 @@ const ReportUI = () => {
             <p><strong>Contact:</strong> {report.contact}</p>
             <p><strong>DateReport:</strong> {dayjs(report.dreport).format("DD/MM/YYYY")}</p>
             <p><strong>Admin:</strong> {admin?.first_name} {admin?.last_name}</p>
-            <p><strong>DateApprove:</strong> {dayjs(report.dapprove).format("DD/MM/YYYY")}</p>
+            <p>
+  <strong>DateApprove:</strong>{" "}
+  {report.dapprove && dayjs(report.dapprove).format("YYYY-MM-DD") !== "0001-01-01"
+    ? dayjs(report.dapprove).format("DD/MM/YYYY")
+    : ""}
+</p>
             <p><strong>DormitoryName:</strong> {report?.dorm?.DormName}</p>
             <p><strong>RoomNumber:</strong> {report?.room?.RoomNumber}</p>
           </div>
@@ -297,7 +318,12 @@ const ReportUI = () => {
           <p><strong>Contact:</strong> {report.contact}</p>
           <p><strong>DateReport:</strong> {dayjs(report.dreport).format("DD/MM/YYYY")}</p>
           <p><strong>Admin:</strong> {admin?.first_name} {admin?.last_name}</p>
-          <p><strong>DateApprove:</strong> {dayjs(report.dapprove).format("DD/MM/YYYY")}</p>
+          <p>
+  <strong>DateApprove:</strong>{" "}
+  {report.dapprove && dayjs(report.dapprove).format("YYYY-MM-DD") !== "0001-01-01"
+    ? dayjs(report.dapprove).format("DD/MM/YYYY")
+    : ""}
+</p>
           <p><strong>DormitoryName:</strong> {report?.dorm?.DormName}</p>
           <p><strong>RoomNumber:</strong> {report?.room?.RoomNumber}</p>
         </div>

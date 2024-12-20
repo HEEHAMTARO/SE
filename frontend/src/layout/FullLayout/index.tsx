@@ -15,6 +15,10 @@ import Report from "../../pages/report";
 import Agree from "../../pages/Agree";
 import UI from "../../pages/UI";
 import Payment from "../../pages/payment";
+import PaymentUI from "../../pages/paymentui";
+import PayUI from "../../pages/PayUI";
+import QR from "../../pages/PayUI/QR";
+import QRwages from "../../pages/PayUI/QRwages";
 import AdminUI from "../../pages/adminui";
 import CustomerCreate from "../../pages/customer/create";
 import AdminCreate from "../../pages/Agree/create";
@@ -25,7 +29,12 @@ import DormitoryCreate from "../../pages/dormitory/create";
 import Room from "../../pages/room";
 import RoomCreate from "../../pages/room/create";
 import Books from "../../pages/books";
+import Course from "../../pages/course";
+import RoomCourse from "../../pages/course/create";
+import Enrollment from "../../pages/enrollment";
+import RoomEnrollment from "../../pages/enrollment/create";
 import BooksCreate from "../../pages/books/create";
+import Dorqrcode from "../../pages/payment/Dorqrcode";
 
 const { Header, Content, Footer } = Layout;
 
@@ -80,6 +89,18 @@ const FullLayout: React.FC = () => {
           <Menu.Item key="Books">
             <Link to="/books" style={{ color: "white" }}>Books</Link>
           </Menu.Item>
+          <Menu.Item key="PaymentUI">
+            <Link to="/paymentui" style={{ color: "white" }}>PaymentUI</Link>
+          </Menu.Item>
+          <Menu.Item key="PayUI">
+            <Link to="/PayUI" style={{ color: "white" }}>PayUI</Link>
+          </Menu.Item>
+          <Menu.Item key="Course">
+            <Link to="/course" style={{ color: "white" }}>course</Link>
+          </Menu.Item>
+          <Menu.Item key="Enrollment">
+            <Link to="/enrollment" style={{ color: "white" }}>enrollment</Link>
+          </Menu.Item>
         </Menu>
         <div>
           <Button
@@ -104,12 +125,21 @@ const FullLayout: React.FC = () => {
           <Route path="/adminui" element={<AdminUI />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/payment/QRcode" element={<QRcode />} />
+          <Route path="/payment/Dorqrcode" element={<Dorqrcode />} />
           <Route path="/dormitory" element={<Dormitory />} />
           <Route path="/dormitory/create" element={<DormitoryCreate />} />
           <Route path="/room" element={<Room />} />
           <Route path="/room/create" element={<RoomCreate />} />
           <Route path="/books" element={<Books />} />
           <Route path="/books/create" element={<BooksCreate />} />
+          <Route path="/paymentui" element={<PaymentUI />} />
+          <Route path="/PayUI" element={<PayUI />} />
+          <Route path="/PayUI/QR" element={<QR />} />
+          <Route path="/PayUI/QRwages" element={<QRwages />} />
+          <Route path="/course" element={<Course />} />
+          <Route path="/course/create" element={<RoomCourse />} />
+          <Route path="/enrollment" element={<Enrollment />} />
+          <Route path="/enrollment/create" element={<RoomEnrollment />} />
         </Routes>
       </Content>
     </Layout>

@@ -13,6 +13,6 @@ type Books struct {
    	Student    *Student  `gorm:"foreignKey: student_id" json:"student"`
 
     RoomID  uint      
-   	Room    *Room  `gorm:"foreignKey: RoomID"`
+   	Room    Room  `gorm:"foreignKey:RoomID"`
 	
 }

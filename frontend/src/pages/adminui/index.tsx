@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Card, message, Modal, Image } from "antd";
-import { GetAdmin, GetReport, UpdateReportById } from "../../services/https/index";
+import { Input, Button, Card, message, Image, Pagination } from "antd";
+import { GetAdmin, GetReport, UpdateReportById, DeleteReportById } from "../../services/https/index";
 import { AdminInterface } from "../../interfaces/Admin";
 import { ReportInterface } from "../../interfaces/Report";
 import dayjs from "dayjs";
@@ -8,258 +8,205 @@ import dayjs from "dayjs";
 const Adminui = () => {
   const [admin, setAdmin] = useState<AdminInterface | null>(null);
   const [report, setReport] = useState<ReportInterface[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [messageApi, contextHolder] = message.useMessage();
+  const pageSize = 3; // Reports per page
 
+  // Fetch admin details
+  const fetchAdmin = async () => {
+    try {
+      const myId = localStorage.getItem("id");
+      const response = await GetAdmin();
+      if (response.status === 200) {
+        const adminData = response.data.find((admin) => String(admin.ID) === myId);
+        setAdmin(adminData || null);
+      }
+    } catch {
+      messageApi.open({ type: "error", content: "Error fetching admin details" });
+    }
+  };
 
-  // ฟังก์ชันดึงข้อมูลรายงาน
+  // Fetch reports
   const fetchReport = async () => {
     try {
       const res = await GetReport();
       if (res.status === 200) {
-        setReport(res.data.filter((rep) => rep.status !== "not approve"));
+        // Filter out reports with status "not approve"
+        const filteredReports = res.data.filter((rep) => rep.status !== "not approve");
+        setReport(filteredReports);
       } else {
-        messageApi.open({
-          type: "error",
-          content: res.data.error,
-        });
+        messageApi.open({ type: "error", content: res.data.error });
       }
-    } catch (error) {
-      messageApi.open({
-        type: "error",
-        content: "เกิดข้อผิดพลาดในการดึงข้อมูลรายงาน",
-      });
+    } catch {
+      messageApi.open({ type: "error", content: "Error fetching reports" });
     }
   };
 
-  // ฟังก์ชันดึงข้อมูล admin
   useEffect(() => {
-    const fetchAdmin = async () => {
-      try {
-        const myId = localStorage.getItem("id");
-        const response = await GetAdmin();
-        if (response.status === 200) {
-          const adminData = response.data.find((admin) => String(admin.ID) === myId);
-          if (adminData) {
-            setAdmin(adminData);
-          } else {
-            messageApi.open({
-              type: "error",
-              content: "ไม่พบข้อมูลผู้ใช้",
-            });
-          }
-        }
-      } catch (error) {
-        messageApi.open({
-          type: "error",
-          content: "เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้",
-        });
-      }
-    };
-
     fetchAdmin();
     fetchReport();
   }, []);
-  
 
-  // ฟังก์ชันจัดการการยืนยันรายงาน (approve)
+  // Approve a report
   const handleApprove = async (reportId: number) => {
-    try {
-      const res = await UpdateReportById(reportId, {
-        status: "approve",
-        admin_id: admin?.ID,
-        dapprove: dayjs().toISOString(),
-      });
-
-      if (res.status === 200) {
-        messageApi.open({
-          type: "success",
-          content: "อัปเดตสถานะสำเร็จ",
-        });
-        fetchReport();
-      } else {
-        messageApi.open({
-          type: "error",
-          content: res.data.error || "เกิดข้อผิดพลาดในการอัปเดต",
-        });
-      }
-    } catch (error) {
-      messageApi.open({
-        type: "error",
-        content: "เกิดข้อผิดพลาดในการอัปเดตสถานะ",
-      });
-    }
+    await updateReportStatus(reportId, "approve");
   };
 
-  // ฟังก์ชันจัดการการปฏิเสธรายงาน (reject)
+  // Reject a report
   const handleReject = async (reportId: number) => {
+    await updateReportStatus(reportId, "not approve");
+  };
+
+  const updateReportStatus = async (reportId: number, status: string) => {
     try {
       const res = await UpdateReportById(reportId, {
-        status: "not approve",
+        status,
         admin_id: admin?.ID,
         dapprove: dayjs().toISOString(),
       });
 
       if (res.status === 200) {
-        messageApi.open({
-          type: "success",
-          content: "ปฏิเสธรายงานสำเร็จ",
-        });
-        fetchReport(); // โหลดข้อมูลใหม่หลังจากอัปเดต
+        messageApi.open({ type: "success", content: `Report ${status}d successfully` });
+        fetchReport(); // Refresh report list
       } else {
-        messageApi.open({
-          type: "error",
-          content: res.data.error || "เกิดข้อผิดพลาดในการปฏิเสธรายงาน",
-        });
+        throw new Error(res.data.error || "Failed to update report");
       }
     } catch (error) {
-      messageApi.open({
-        type: "error",
-        content: "เกิดข้อผิดพลาดในการปฏิเสธรายงาน",
-      });
+      messageApi.open({ type: "error", content: error.message });
     }
   };
+
+  // Filter out reports if any previous report for the same user was approved
+  const filteredReports = report.filter((rep) => {
+    const hasApprovedReport = report.some(
+      (r) => r.users_id === rep.users_id && r.status === "approve"
+    );
+    return !hasApprovedReport && !["approve", "not approve"].includes(rep.status);
+  });
+
+  const paginatedReports = filteredReports.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
-    <div
-      style={{
-        backgroundColor: "#d3d3d3",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "20px",
-        minHeight: "100vh",
-      }}
-    >
+    <div style={styles.container}>
       {contextHolder}
-      <div
-        style={{
-          width: "150px",
-          height: "150px",
-          backgroundColor: "#555",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          borderRadius: "50%",
-          marginBottom: "20px",
-          overflow: "hidden",
-        }}
-      >
+      {/* Admin Profile */}
+      <div style={styles.profileContainer}>
         <img
-          src={admin?.Profile || "https://via.placeholder.com/100"}
+          src={admin?.Profile || "https://via.placeholder.com/150"}
           alt="Admin Profile"
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={styles.profileImage}
         />
       </div>
+      <div style={styles.NameContainer}>{admin && `${admin.first_name} ${admin.last_name} (ID: ${admin.ID})`}</div>
 
-      <div>{admin && `${admin.first_name} ${admin.last_name} (ID: ${admin.ID})`}</div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "20px",
-          marginTop: "60px",
-          justifyContent: "center",
-          width: "100%",
-          maxWidth: "1200px",
-          margin: "60px",
-        }}
-      >
-        {report.filter((rep) => !["approve", "not approve"].includes(rep.status)).length === 0 ? (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      gridColumn: "span 4",
-      height: "100%",
-      textAlign: "center",
-    }}
-  >
-    <p>ไม่มีรายงานที่รอการตรวจสอบ</p>
-  </div>
-) : (
-  report
-    .filter((rep) => !["approve", "not approve"].includes(rep.status))
-    .filter((rep) => {
-      // Check if any previous report for the same user has been approved
-      const hasApprovedReport = report.some(
-        (r) => r.users_id === rep.users_id && r.status === "approve"
-      );
-      return !hasApprovedReport; // Exclude this report if an approved report already exists
-    })
-    .map((rep) => (
-      <Card
-        key={rep.ID}
-        style={{
-          textAlign: "center",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-        }}
-      >
-        <div
-          style={{
-            width: "100px",
-            height: "100px",
-            backgroundColor: "#888",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: "50%",
-            margin: "0 auto 10px",
-            overflow: "hidden",
-          }}
-        >
-          <img
-            src={rep.users.Profile || "https://via.placeholder.com/100"}
-            alt={rep.users.Profile}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        </div>
+      {/* Reports List */}
+      <div style={styles.gridContainer}>
+        {paginatedReports.length === 0 ? (
+          <p style={styles.noReportsText}>ไม่มีรายงานที่รอการตรวจสอบ</p>
+        ) : (
+          paginatedReports.map((rep) => (
+            <Card key={rep.ID} style={styles.card}>
+              {/* User Image */}
+              <div style={styles.userImageContainer}>
+                <img
+                  src={rep.users?.Profile || "https://via.placeholder.com/100"}
+                  alt="User Profile"
+                  style={styles.userImage}
+                />
+              </div>
 
-        <h3>
-          {rep.users ? `${rep.users.FirstName} ${rep.users.last_name}` : "ไม่พบข้อมูล"}
-        </h3>
-        <p>{rep.users?.email}</p>
+              {/* User Details */}
+              <h3>{rep.users ? `${rep.users.FirstName} ${rep.users.last_name}` : "ไม่พบข้อมูล"}</h3>
+              <p>{rep.users?.email}</p>
 
-        <p><strong>Photo:</strong></p>
-        <Image
-          src={rep.Photo}
-          alt="Report"
-          style={{
-            display: "block",
-            width: "200px",
-            height: "200px",
-          }}
-        />
-        <p><strong>Note:</strong></p>
-        <Input.TextArea
-          value={rep.note || "ไม่มีหมายเหตุ"}
-          rows={2}
-          style={{ marginBottom: "10px" }}
-          disabled
-        />
+              {/* Report Details */}
+              <Image src={rep.Photo} alt="Report" style={styles.reportImage} />
+              <Input.TextArea
+                value={rep.note || "ไม่มีหมายเหตุ"}
+                rows={2}
+                disabled
+                style={{ marginBottom: "10px" }}
+              />
+              <p>Contact: {rep.contact || "ไม่มีข้อมูล"}</p>
+              <p>Date Report: {dayjs(rep.dreport).format("DD/MM/YYYY")}</p>
+              <p>Dorm: {rep.dorm?.DormName || "ไม่มีข้อมูล"}</p>
+              <p>Room: {rep.room?.RoomNumber || "ไม่มีข้อมูล"}</p>
 
-        {/* เพิ่มข้อมูล Contact และ dReport */}
-        <p><strong>Contact:</strong> {rep.contact || "ไม่มีข้อมูล"}</p>
-        <p><strong>DateReport:</strong> {dayjs(rep.dreport).format("DD/MM/YYYY")}</p>
-        <p><strong>Contact:</strong> {rep.dorm?.DormName || "ไม่มีข้อมูล"}</p>
-        <p><strong>Contact:</strong> {rep.room?.RoomNumber || "ไม่มีข้อมูล"}</p>
-
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Button danger onClick={() => handleReject(rep.ID)}>
-            ปฏิเสธ
-          </Button>
-          <Button type="primary" onClick={() => handleApprove(rep.ID)}>
-            ยอมรับ
-          </Button>
-        </div>
-      </Card>
-            ))
+              {/* Action Buttons */}
+              <div style={styles.buttonContainer}>
+                <Button danger onClick={() => handleReject(rep.ID)}>
+                  ปฏิเสธ
+                </Button>
+                <Button type="primary" onClick={() => handleApprove(rep.ID)}>
+                  ยอมรับ
+                </Button>
+              </div>
+            </Card>
+          ))
         )}
       </div>
+
+      {/* Pagination */}
+      <Pagination
+        current={currentPage}
+        pageSize={pageSize}
+        total={filteredReports.length}
+        onChange={(page) => setCurrentPage(page)}
+        style={{ marginTop: "20px" }}
+      />
     </div>
   );
 };
 
 export default Adminui;
+
+// Styles
+const styles = {
+  container: {
+    backgroundColor: "#d3d3d3",
+    padding: "20px",
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  profileContainer: {
+    width: "150px",
+    height: "150px",
+    overflow: "hidden",
+    borderRadius: "50%",
+    marginBottom: "20px",
+  },
+  NameContainer: {
+    marginBottom: "50px",
+  },
+  profileImage: { width: "100%", height: "100%", objectFit: "cover" },
+  gridContainer: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "20px",
+    width: "100%",
+    maxWidth: "1200px",
+  },
+  card: {
+    textAlign: "center",
+    borderRadius: "8px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    padding: "15px",
+  },
+  userImageContainer: {
+    width: "100px",
+    height: "100px",
+    borderRadius: "50%",
+    overflow: "hidden",
+    margin: "0 auto 10px",
+  },
+  userImage: { width: "100%", height: "100%", objectFit: "cover" },
+  reportImage: { width: "100%", height: "150px", objectFit: "cover", margin: "10px 0" },
+  buttonContainer: { display: "flex", justifyContent: "space-between" },
+  noReportsText: { gridColumn: "span 3", textAlign: "center" },
+};

@@ -6,18 +6,20 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 
 import type { ColumnsType } from "antd/es/table";
 
-import { GetUsers, DeleteUsersById, GetReport } from "../../services/https/index";
+import { GetUsers, DeleteUsersById, GetReport, GetCourse } from "../../services/https/index";
 
 import { UsersInterface } from "../../interfaces/IUser";
 
 import { ReportInterface } from "../../interfaces/Report";
+
+import { CourseInterface } from "../../interfaces/Course";
 
 import { Link, useNavigate } from "react-router-dom";
 
 import dayjs from "dayjs";
 
 
-function Report() {
+function Course() {
 
   const navigate = useNavigate();
 
@@ -25,12 +27,14 @@ function Report() {
 
   const [report, setReport] = useState<ReportInterface[]>([]);
 
+  const [course, setCourse] = useState<CourseInterface[]>([]);
+
   const [messageApi, contextHolder] = message.useMessage();
 
   const myId = localStorage.getItem("id");
 
 
-  const columns: ColumnsType<ReportInterface> = [
+  const columns: ColumnsType<CourseInterface> = [
 
     {
 
@@ -75,137 +79,117 @@ function Report() {
       key: "id",
 
     },
-
-    {
-      title: "รูปประจำตัว",
-      dataIndex: "photo",
-      key: "photo",
-      width: "15%",
-      render: (text, record, index) => (
-        <img src={record.Photo} className="w3-left w3-circle w3-margin-right" width="100%" />
-      )
-    },
   
 
     {
 
-      title: "Note",
+      title: "CourseCode",
 
-      dataIndex: "note",
+      dataIndex: "CourseCode",
 
-      key: "Note",
-
-    },
-
-    {
-
-      title: "Contact",
-
-      dataIndex: "contact",
-
-      key: "contact",
+      key: "CourseCode",
 
     },
 
     {
 
-      title: "AdminID",
+      title: "CourseName",
 
-      dataIndex: "admin_id",
+      dataIndex: "CourseName",
 
-      key: "admin_id",
-
-    },
-
-    {
-
-      title: "DateReport",
-
-      key: "dreport",
-
-      render: (record) => <>{dayjs(record.dreport).format("DD/MM/YYYY")}</>,
+      key: "CourseName",
 
     },
 
     {
 
-      title: "DateApprove",
+      title: "Credit",
 
-      key: "dapprove",
+      dataIndex: "Credit",
 
-      render: (record) => <>{dayjs(record.dapprove).format("DD/MM/YYYY")}</>,
-
-    },
-
-    {
-
-      title: "Admin",
-
-      key: "admin",
-
-      render: (record) => <>{record?.admin?.first_name}</>,
+      key: "Credit",
 
     },
 
     {
 
-      title: "Users",
+        title: "Group",
+  
+        dataIndex: "Group",
+  
+        key: "Group",
+  
+      },
 
-      key: "users",
+    // {
 
-      render: (record) => <>{record?.users?.first_name}</>,
+    //   title: "Admin",
 
-    },
+    //   key: "admin",
 
-    {
+    //   render: (record) => <>{record?.admin?.first_name}</>,
 
-      title: "UsersID",
+    // },
 
-      key: "id",
+    // {
 
-      render: (record) => <>{record?.users?.ID}</>,
+    //   title: "Users",
 
-    },
+    //   key: "users",
 
-    {
+    //   render: (record) => <>{record?.users?.first_name}</>,
 
-      title: "DormitoryID",
+    // },
 
-      key: "ID",
+    // {
 
-      render: (record) => <>{record?.dormitory_id}</>,
+    //   title: "UsersID",
 
-    },
+    //   key: "id",
 
-    {
+    //   render: (record) => <>{record?.users?.ID}</>,
 
-      title: "DormitoryName",
+    // },
 
-      key: "DormName",
+    // {
 
-      render: (record) => <>{record?.dorm?.DormName}</>,
+    //   title: "DormitoryID",
 
-    },
+    //   key: "ID",
 
-    {
+    //   render: (record) => <>{record?.dormitory_id}</>,
 
-      title: "Price",
+    // },
 
-      key: "Price",
+    // {
 
-      render: (record) => <>{record?.dorm?.Price}</>,
+    //   title: "DormitoryName",
 
-    },
+    //   key: "DormName",
 
-    {
+    //   render: (record) => <>{record?.dorm?.DormName}</>,
 
-      title: "BooksID",
+    // },
 
-      key: "ID",
+    // {
 
-      render: (record) => <>{record?.books_id}</>,
+    //   title: "Price",
 
-    },
+    //   key: "Price",
+
+    //   render: (record) => <>{record?.dorm?.Price}</>,
+
+    // },
+
+    // {
+
+    //   title: "BooksID",
+
+    //   key: "ID",
+
+    //   render: (record) => <>{record?.books_id}</>,
+
+    // },
 
     // {
 
@@ -217,33 +201,33 @@ function Report() {
 
     // },
 
-    {
+    // {
 
-      title: "RoomID",
+    //   title: "RoomID",
 
-      key: "ID",
+    //   key: "ID",
 
-      render: (record) => <>{record?.room_id}</>,
+    //   render: (record) => <>{record?.room_id}</>,
 
-    },
+    // },
 
-    {
+    // {
 
-      title: "RoomstudentID",
+    //   title: "RoomstudentID",
 
-      key: "Number",
+    //   key: "Number",
 
-      render: (record) => <>{record?.room?.RoomNumber}</>,
+    //   render: (record) => <>{record?.room?.RoomNumber}</>,
 
-    },
+    // },
 
     {
 
       title: "Status",
 
-      dataIndex: "status",
+      dataIndex: "Status",
 
-      key: "status",
+      key: "Status",
 
     },
 
@@ -362,12 +346,40 @@ function Report() {
 
   };
 
+  const getCourse = async () => {
+
+    let res = await GetCourse();
+
+   
+
+    if (res.status == 200) {
+
+      setCourse(res.data);
+
+    } else {
+
+      setCourse([]);
+
+      messageApi.open({
+
+        type: "error",
+
+        content: res.data.error,
+
+      });
+
+    }
+
+  };
+
 
   useEffect(() => {
 
     getUsers();
     
     getReport();
+
+    getCourse();
 
   }, []);
 
@@ -391,7 +403,7 @@ function Report() {
 
           <Space>
 
-            <Link to="/customer/create">
+            <Link to="/course/create">
 
               <Button type="primary" icon={<PlusOutlined />}>
 
@@ -419,7 +431,7 @@ function Report() {
 
           columns={columns}
 
-          dataSource={report}
+          dataSource={course}
 
           style={{ width: "100%", overflow: "scroll" }}
 
@@ -434,4 +446,4 @@ function Report() {
 }
 
 
-export default Report;
+export default Course;

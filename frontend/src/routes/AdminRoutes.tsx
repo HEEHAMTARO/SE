@@ -41,8 +41,25 @@ const CreateRoom = Loadable(lazy(() => import("../pages/room/create")));
 
 const Books = Loadable(lazy(() => import("../pages/books")));
 
+const Course = Loadable(lazy(() => import("../pages/course")));
+
+const CreateCourse = Loadable(lazy(() => import("../pages/course/create")));
+
+const Enrollment = Loadable(lazy(() => import("../pages/enrollment")));
+
+const CreateEnrollment = Loadable(lazy(() => import("../pages/enrollment/create")));
+
 const CreateBooks = Loadable(lazy(() => import("../pages/books/create")));
 
+const PaymentUI = Loadable(lazy(() => import("../pages/paymentui")));
+
+const PayUI = Loadable(lazy(() => import("../pages/PayUI")));
+
+const QR = Loadable(lazy(() => import("../pages/PayUI/QR")));
+
+const QRwages = Loadable(lazy(() => import("../pages/PayUI/QRwages")));
+
+const Dorqrcode = Loadable(lazy(() => import("../pages/payment/Dorqrcode")));
 
 
 const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
@@ -181,6 +198,82 @@ const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
 
           },
 
+          {
+
+            path: "/payment/Dorqrcode",
+
+            element: <Dorqrcode />,
+
+          },
+
+        ],
+
+      },
+
+      {
+
+        path: "/paymentui",
+
+        children: [
+
+          {
+
+            path: "/paymentui",
+
+            element: <PaymentUI />,
+
+          },
+
+          {
+
+            path: "/paymentui/QRcode",
+
+            element: <QRcode />,
+
+          },
+
+          {
+
+            path: "/paymentui/Dorqrcode",
+
+            element: <Dorqrcode />,
+
+          },
+
+        ],
+
+      },
+
+      {
+
+        path: "/PayUI",
+
+        children: [
+
+          {
+
+            path: "/PayUI",
+
+            element: <PayUI />,
+
+          },
+
+          {
+
+            path: "/PayUI/QR",
+
+            element: <QR />,
+
+          },
+
+          {
+
+            path: "/PayUI/QRwages",
+
+            element: <QRwages />,
+
+          },
+
         ],
 
       },
@@ -197,6 +290,58 @@ const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
             path: "/adminui",
 
             element: <AdminUI />,
+
+          },
+
+        ],
+
+      },
+
+      {
+
+        path: "/course",
+
+        children: [
+
+          {
+
+            path: "/course",
+
+            element: <Course />,
+
+          },
+
+          {
+
+            path: "/course/create",
+
+            element: <CreateCourse />,
+
+          },
+
+        ],
+
+      },
+
+      {
+
+        path: "/enrollment",
+
+        children: [
+
+          {
+
+            path: "/enrollment",
+
+            element: <Enrollment />,
+
+          },
+
+          {
+
+            path: "/enrollment/create",
+
+            element: <CreateEnrollment />,
 
           },
 

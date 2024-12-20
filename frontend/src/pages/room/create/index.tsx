@@ -67,9 +67,18 @@ function RoomCreate() {
                 <InputNumber min={0} max={99} style={{ width: "100%" }} />
               </Form.Item>
             </Col>
+            <Col span={12}>
+              <Form.Item
+                label="DormitoryID"
+                name="DormitoryID"
+                rules={[{ required: true, message: "กรุณากรอก DormitoryID!" }]}
+              >
+                <InputNumber min={0} max={99} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
           </Row>
 
-          <Form.List name="Dormitory">
+          {/* <Form.List name="Dormitory">
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, fieldKey, ...restField }) => (
@@ -108,7 +117,7 @@ function RoomCreate() {
                 </Form.Item>
               </>
             )}
-          </Form.List>
+          </Form.List> */}
 
           <Row justify="end">
             <Col style={{ marginTop: "40px" }}>

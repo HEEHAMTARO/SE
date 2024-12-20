@@ -39,6 +39,10 @@ func ConnectionDB() {
 
 }
 
+func uintPtr(value uint) *uint {
+	return &value
+}
+
 
 func SetupDatabase() {
 
@@ -60,6 +64,10 @@ func SetupDatabase() {
       &entity.Books{},
 
       &entity.Report{},
+
+      &entity.Enrollment{},
+
+      &entity.Course{},
 
 
    )
@@ -151,16 +159,41 @@ func SetupDatabase() {
   Dormitory := &entity.Dormitory{
    DormName: "หอป้ากับม้า",    
 	DormDescription: "ที่พักสะดวกสบาย",            
-	DormEquipment: "",   
-   RoomID: 1,    
+	DormType: "หอชาย",       
 }
 
 Room := &entity.Room{
    RoomNumber: "B321",
-	Dormitory: []entity.Dormitory{
-		{RoomID: 1,DormName: "หอม้ากับป้า", DormDescription: "ที่พักไม่สะดวกสบาย", Price: 50000},
-	},         
+	DormitoryID: 1,
 }
+
+Enrollment := &entity.Enrollment{
+   StudentID: uintPtr(1),
+}
+
+db.FirstOrCreate(Enrollment, &entity.Enrollment{
+   CourseID: uintPtr(1),
+})
+
+Course := &entity.Course{
+   CourseName: "SE",
+}
+
+db.FirstOrCreate(Course, &entity.Course{
+   Credit: 4,
+})
+
+// Payment := &entity.Payment{
+//    UsersID: 1,    
+// 	Wages: 100,            
+// 	DormitoryID: 1, 
+//    StatusDor: "ค้างชำระ",
+//    StatusStudent: "ค้างชำระ",      
+// }
+
+// db.FirstOrCreate(Payment, &entity.Payment{
+//    Wages: 100,
+// })
 
 db.FirstOrCreate(Room, &entity.Room{
    Score: 5,
