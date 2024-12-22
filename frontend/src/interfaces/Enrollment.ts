@@ -3,4 +3,5 @@ export interface EnrollmentInterface {
     Status?: boolean;
     StudentID?: number;
     CourseID?: number;
+    SemesterID?: number;
     }

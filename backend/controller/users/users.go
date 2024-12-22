@@ -24,7 +24,7 @@ func GetAll(c *gin.Context) {
 
    db := config.DB()
 
-   results := db.Preload("Gender").Find(&users)
+   results := db.Preload("Gender").Preload("Semester").Find(&users)
 
    if results.Error != nil {
 
@@ -50,7 +50,7 @@ func Get(c *gin.Context) {
 
    db := config.DB()
 
-   results := db.Preload("Gender").First(&user, ID)
+   results := db.Preload("Gender").Preload("Semester").First(&user, ID)
 
    if results.Error != nil {
 

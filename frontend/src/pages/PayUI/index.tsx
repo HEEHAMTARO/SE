@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, message } from "antd";
 import { UsersInterface } from "../../interfaces/IUser";
 import { DormitoryInterface } from "../../interfaces/Dormitory";
-import { GetUsers, GetDormitory, GetRoom, GetBooks, GetPayment, CreatePayment, UpdatePaymentById, GetCourse, GetEnrollment } from "../../services/https/index";
+import { GetUsers, GetDormitory, GetRoom, GetBooks, GetPayment, CreatePayment, UpdatePaymentById, GetCourse, GetEnrollment, GetReport } from "../../services/https/index";
 import { RoomInterface } from "../../interfaces/Room";
 import { BooksInterface } from "../../interfaces/Books";
 import { PaymentInterface } from "../../interfaces/Payment";
 import { CourseInterface } from "../../interfaces/Course";
+import { ReportInterface } from "../../interfaces/Report";
 import { EnrollmentInterface } from "../../interfaces/Enrollment";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -16,6 +17,7 @@ const PayUI: React.FC = () => {
   const [dormitory, setDormitory] = useState<DormitoryInterface[]>([]);
   const [room, setRoom] = useState<RoomInterface[]>([]);
   const [books, setBooks] = useState<BooksInterface[]>([]);
+  const [report, setReport] = useState<ReportInterface[]>([]);
   const [payment, setPayment] = useState<PaymentInterface[]>([]);
   const [course, setCourse] = useState<CourseInterface[]>([]);
   const [enrollment, setEnrollment] = useState<EnrollmentInterface[]>([]);
@@ -29,6 +31,19 @@ const PayUI: React.FC = () => {
       setUsers(res.data);
     } else {
       setUsers([]);
+      messageApi.open({
+        type: "error",
+        content: res.data.error,
+      });
+    }
+  };
+
+  const getReport = async () => {
+    let res = await GetReport();
+    if (res.status == 200) {
+      setReport(res.data);
+    } else {
+      setReport([]);
       messageApi.open({
         type: "error",
         content: res.data.error,
@@ -123,6 +138,7 @@ const PayUI: React.FC = () => {
     getPayment();
     getCourse();
     getEnrollment();
+    getReport();
   }, []);
 
   
@@ -135,6 +151,12 @@ const PayUI: React.FC = () => {
     if (!roomInfo) return null;
     const dormInfo = dormitory.find((d) => d.ID === roomInfo.DormitoryID);
     return dormInfo ? dormInfo.DormName : null;
+  };
+
+  const getReportStatus = (studentId: number) => {
+    if (studentId.toString() !== myId) return null;
+    const re = report.find((r) => r.users_id === studentId && r.status === "approve");
+    return re ? "approve" : null;
   };
 
   const getDormID = (studentId: number) => {
@@ -157,15 +179,30 @@ const PayUI: React.FC = () => {
     return dormInfo ? dormInfo.Price : null;
   };
 
-  const getPaymentDorStatus = (studentId: number) => {
+
+  const getPaymentDorStatus = (studentId: number, semesterId: number, yearOfStudy: number) => {
     if (studentId.toString() !== myId) return null;
-    const paymentInfo = payment.find((p) => p.users_id === studentId);
+  
+    const paymentInfo = payment.find(
+      (p) =>
+        p.users_id === studentId &&
+        p.termstudent === semesterId &&
+        p.yearstudent === yearOfStudy
+    );
+  
     return paymentInfo ? paymentInfo.statusdor : null;
   };
 
-  const getPaymentStudentStatus = (studentId: number) => {
+  const getPaymentStudentStatus = (studentId: number, semesterId: number, yearOfStudy: number) => {
     if (studentId.toString() !== myId) return null;
-    const paymentInfo = payment.find((p) => p.users_id === studentId);
+  
+    const paymentInfo = payment.find(
+      (p) =>
+        p.users_id === studentId &&
+        p.termstudent === semesterId &&
+        p.yearstudent === yearOfStudy
+    );
+  
     return paymentInfo ? paymentInfo.statusstudent : null;
   };
   
@@ -182,9 +219,16 @@ const PayUI: React.FC = () => {
       return;
     }
 
-    const existingPayment = payment.find((p) => p.users_id === user.ID);
+    // Find existing payment based on users_id and check semester_id and YearOfStudy match
+    const existingPayment = payment.find(
+      (p) =>
+        p.users_id === user.ID &&
+        p.yearstudent === user.YearOfStudy &&
+        p.termstudent === user.semester_id
+    );
+
     if (existingPayment) {
-      // Update payment if it already exists
+      // If the payment exists and semester_id and YearOfStudy match, update the payment
       const updatedPayment = {
         ...existingPayment,
         wages: dormPrice,
@@ -202,11 +246,13 @@ const PayUI: React.FC = () => {
         });
       }
     } else {
-      // Create new payment if it doesn't exist
+      // If no matching payment is found, create a new payment
       const paymentData = {
         users_id: user.ID,
         dormitory_id: dormID,
         wages: dormPrice,
+        termstudent: user.semester_id, // semester_id as termstudent
+        yearstudent: user.YearOfStudy, // YearOfStudy as yearstudent
       };
       const res = await CreatePayment(paymentData);
       if (res.status === 200) {
@@ -221,32 +267,38 @@ const PayUI: React.FC = () => {
         });
       }
     }
-  };
+};
+
 
   const handleCoursePayment = async (user: UsersInterface) => {
-    const courseID = getCoursePrice(user.ID);
+    const courseID = getCoursePrice(user.ID, user.semester_id);
     const dormID = getDormID(user.ID);
 
     if (!courseID) {
       messageApi.open({
         type: "error",
-        content: "ข้อมูลหอพักไม่ครบถ้วน",
+        content: "ข้อมูลหอค่าเทอมไม่ครบถ้วน",
       });
       return;
     }
 
-    const existingPayment = payment.find((p) => p.users_id === user.ID);
+    const existingPayment = payment.find(
+      (p) =>
+        p.users_id === user.ID &&
+        p.yearstudent === user.YearOfStudy &&
+        p.termstudent === user.semester_id
+    );
     if (existingPayment) {
       // Update payment if it already exists
       const updatedPayment = {
         ...existingPayment,
-        wages: courseID,
+        wagesstudent: courseID,
       };
       const res = await UpdatePaymentById(existingPayment.ID, updatedPayment);
       if (res.status === 200) {
         messageApi.open({
           type: "success",
-          content: "อัปเดตการชำระเงินหอพักเรียบร้อย",
+          content: "อัปเดตการชำระเงินค่าเทอมเรียบร้อย",
         });
       } else {
         messageApi.open({
@@ -258,8 +310,10 @@ const PayUI: React.FC = () => {
       // Create new payment if it doesn't exist
       const paymentData = {
         users_id: user.ID,
-        wages: courseID,
+        wagesstudent: courseID,
         dormitory_id: dormID,
+        termstudent: user.semester_id, // semester_id as termstudent
+        yearstudent: user.YearOfStudy, // YearOfStudy as yearstudent
       };
       const res = await CreatePayment(paymentData);
       if (res.status === 200) {
@@ -276,17 +330,21 @@ const PayUI: React.FC = () => {
     }
   };
 
-  const getCourseDetails = (myId: number) => {
-    // หาทุก enrollment ที่มี student_id ตรงกับ myId
-    const userEnrollments = enrollment.filter((e) => e.StudentID === myId);
+  const getCourseDetails = (myId: number, semesterId: number) => {
+    // หาทุก enrollment ที่มี student_id ตรงกับ myId และ semester_id ตรงกับ semesterId
+    const userEnrollments = enrollment.filter(
+      (e) => e.StudentID === myId && e.semester_id === semesterId
+    );
   
     // ถ้ามีการลงทะเบียน
     if (userEnrollments.length > 0) {
       // หา Credit ของ Course ที่ตรงกับ course_id ของแต่ละ enrollment
-      const courseCredits = userEnrollments.map((enrollmentItem) => {
-        const courseDetails = course.find((c) => c.ID === enrollmentItem.CourseID);
-        return courseDetails ? courseDetails.Credit : null; // ถ้าไม่พบ course จะได้ null
-      }).filter(credit => credit !== null); // กรองค่า null ออก
+      const courseCredits = userEnrollments
+        .map((enrollmentItem) => {
+          const courseDetails = course.find((c) => c.ID === enrollmentItem.CourseID);
+          return courseDetails ? courseDetails.Credit : null; // ถ้าไม่พบ course จะได้ null
+        })
+        .filter((credit) => credit !== null); // กรองค่า null ออก
   
       // ถ้ามี Credit ของ Course ให้รวมทั้งหมด
       if (courseCredits.length > 0) {
@@ -299,10 +357,11 @@ const PayUI: React.FC = () => {
   
     return "ไม่พบข้อมูล";
   };
-
-  const getCoursePrice = (myId: number) => {
+  const getCoursePrice = (myId: number, semesterId: number) => {
     // หาทุก enrollment ที่มี student_id ตรงกับ myId
-    const userEnrollments = enrollment.filter((e) => e.StudentID === myId);
+    const userEnrollments = enrollment.filter(
+      (e) => e.StudentID === myId && e.semester_id === semesterId
+    );
   
     // ถ้ามีการลงทะเบียน
     if (userEnrollments.length > 0) {
@@ -399,7 +458,13 @@ const PayUI: React.FC = () => {
                 <strong>Email:</strong> {user.email}
               </p>
               <p>
-                <strong>ID:</strong> {getDormID(user.ID) || "ไม่พบข้อมูล"}
+                <strong>Status:</strong> {getReportStatus(user.ID)}
+              </p>
+              <p>
+                <strong>Term:</strong> {user.semester_id}
+              </p>
+              <p>
+                <strong>DormID:</strong> {getDormID(user.ID) || "ไม่พบข้อมูล"}
               </p>
               <p>
                 <strong>หอพัก:</strong> {getDormName(user.ID) || "ไม่พบข้อมูล"}
@@ -408,16 +473,16 @@ const PayUI: React.FC = () => {
                 <strong>ยอดชำระ:</strong> {getDormPrice(user.ID) || "ไม่พบข้อมูล"} บาท
               </p>
               <p>
-                <strong>สถานะการชำระ:</strong> {getPaymentDorStatus(user.ID) || "-"}
+                <strong>สถานะการชำระ:</strong> {getPaymentDorStatus(user.ID, user.semester_id, user.YearOfStudy) || "-"}
               </p>
               <Link to="/PayUI/QR">
               <Button
-                type="primary"
-                block
-                onClick={() => handleDormitoryPayment(user)}
-              >
-                ชำระเงินหอพัก
-              </Button>
+    type="primary"
+    block
+    onClick={getReportStatus(user.ID) !== "approve" ? () => handleDormitoryPayment(user) : undefined}
+  >
+    ชำระเงินหอพัก
+  </Button>
               </Link>
             </div>
           </Card>
@@ -468,15 +533,18 @@ const PayUI: React.FC = () => {
                 <strong>Email:</strong> {user.email}
               </p>
               <p>
-                <strong>หน่วยกิต:</strong> {getCourseDetails(user.ID)}
+                <strong>Term:</strong> {user.semester_id}
               </p>
               <p>
-                <strong>ยอดชำระ:</strong> {getCoursePrice(user.ID)} บาท
+                <strong>หน่วยกิต:</strong> {getCourseDetails(user.ID, user.semester_id)}
               </p>
               <p>
-                <strong>สถานะการชำระ:</strong> {getPaymentStudentStatus(user.ID) || "-"}
+                <strong>ยอดชำระ:</strong> {getCoursePrice(user.ID, user.semester_id)} บาท
               </p>
-              <Link to="/PayUI/QR">
+              <p>
+                <strong>สถานะการชำระ:</strong> {getPaymentStudentStatus(user.ID, user.semester_id, user.YearOfStudy) || "-"}
+              </p>
+              <Link to="/PayUI/QRwages">
               <Button
                 type="primary"
                 block

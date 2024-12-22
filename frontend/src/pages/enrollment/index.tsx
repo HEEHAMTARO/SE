@@ -97,6 +97,16 @@ function Enrollment() {
 
     {
 
+      title: "semester_id",
+
+      dataIndex: "semester_id",
+
+      key: "semester_id",
+
+    },
+
+    {
+
       title: "CourseID",
 
       dataIndex: "CourseID",

@@ -11,5 +11,11 @@ export interface PaymentInterface {
     StatusDor?: string;
 
     StatusStudent?: string;
+
+    TermStudent?: number;
+
+    YearStudent?: number;
+
+    WagesStudent?: number;
   
   }

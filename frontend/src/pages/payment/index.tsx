@@ -54,9 +54,25 @@ function Payment() {
     key: "statusstudent",
   },
   {
+    title: "termstudent",
+    key: "termstudent",
+    dataIndex: "termstudent",
+  },
+  {
+    title: "yearstudent",
+    key: "yearstudent",
+    dataIndex: "yearstudent",
+  },
+  {
     title: "WagesPayment",
     dataIndex: "wages",
     key: "wages",
+    render: (value) => value.toFixed(2),
+  },
+  {
+    title: "WagesStudent",
+    dataIndex: "wagesstudent",
+    key: "wagesstudent",
     render: (value) => value.toFixed(2),
   },
   {

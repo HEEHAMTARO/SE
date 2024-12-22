@@ -33,4 +33,10 @@ type Student struct {
    
    Wages  float64 `json:"wages"`
 
+   SemesterID  uint      `json:"semester_id"`
+
+   Semester    *Semester  `gorm:"foreignKey: semester_id" json:"semester"`
+
+   YearOfStudy int
+
 }

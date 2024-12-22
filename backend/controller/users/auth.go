@@ -57,6 +57,10 @@ type (
 
        Wages     float64  `json:"wages"`
 
+       YearOfStudy int
+
+       SemesterID  uint      `json:"semester_id"`
+
    }
 
 )
@@ -135,6 +139,10 @@ func SignUp(c *gin.Context) {
        Profile:   payload.Profile,
 
        Wages:   payload.Wages,
+
+       SemesterID:   payload.SemesterID,
+
+       YearOfStudy:   payload.YearOfStudy,
 
    }
 

@@ -12,4 +12,7 @@ type Enrollment struct {
 
 	CourseID *uint
 	Course   Course `gorm:"foreignKey:CourseID"`
+
+	SemesterID  uint      `json:"semester_id"`
+   	Semester    *Semester  `gorm:"foreignKey: semester_id" json:"semester"`
 }

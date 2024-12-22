@@ -136,6 +136,8 @@ func main() {
 
        router.GET("/books", books.GetAll)
 
+       router.DELETE("/book/:id", books.Delete)
+
        router.PUT("/book/:id", books.Update) //books
 
 

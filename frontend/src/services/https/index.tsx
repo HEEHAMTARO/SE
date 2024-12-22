@@ -248,6 +248,18 @@ async function DeleteReportById(id: string) {
 
 }
 
+async function DeleteBooksById(id: string) {
+
+  return await axios
+
+    .delete(`${apiUrl}/book/${id}`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
 
 async function CreateUser(data: UsersInterface) {
 
@@ -428,5 +440,7 @@ export {
   CreateCourse,
 
   CreateEnrollment,
+
+  DeleteBooksById,
 
 };

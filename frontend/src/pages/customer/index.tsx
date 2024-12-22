@@ -52,6 +52,16 @@ function Customers() {
       key: "last_name",
     },
     {
+      title: "semester_id",
+      dataIndex: "semester_id",
+      key: "semester_id",
+    },
+    {
+      title: "YearOfStudy",
+      dataIndex: "YearOfStudy",
+      key: "YearOfStudy",
+    },
+    {
       title: "Wages",
       dataIndex: "wages",
       key: "wages",

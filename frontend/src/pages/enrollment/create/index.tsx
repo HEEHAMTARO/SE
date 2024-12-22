@@ -69,6 +69,15 @@ import {
                   <InputNumber min={0} max={99} style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="semester_id"
+                  name="semester_id"
+                  rules={[{ required: true, message: "กรุณากรอก semester_id!" }]}
+                >
+                  <InputNumber min={0} max={99} style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
             </Row>
   
             {/* <Form.List name="Dormitory">

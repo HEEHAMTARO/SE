@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Input, Button, Card, message, Image, Pagination } from "antd";
-import { GetAdmin, GetReport, UpdateReportById, DeleteReportById } from "../../services/https/index";
+import { GetAdmin, GetReport, UpdateReportById, DeleteBooksById, GetBooks } from "../../services/https/index";
 import { AdminInterface } from "../../interfaces/Admin";
 import { ReportInterface } from "../../interfaces/Report";
 import dayjs from "dayjs";
@@ -48,9 +48,39 @@ const Adminui = () => {
   }, []);
 
   // Approve a report
-  const handleApprove = async (reportId: number) => {
+  // Approve a report and delete books associated with the user
+const handleApprove = async (reportId: number) => {
+  try {
+    // Call the function to update report status
     await updateReportStatus(reportId, "approve");
-  };
+
+    // Find the report by ID
+    const reportToApprove = report.find((rep) => rep.ID === reportId);
+    if (!reportToApprove || !reportToApprove.users_id) {
+      throw new Error("Report or user ID not found");
+    }
+
+    // Fetch books and filter by user ID
+    const booksResponse = await GetBooks();
+    if (booksResponse.status === 200) {
+      const booksToDelete = booksResponse.data.filter(
+        (books) => books.student_id === reportToApprove.users_id
+      );
+
+      // Delete each book that matches
+      for (const book of booksToDelete) {
+        await DeleteBooksById(book.ID);
+      }
+    } else {
+      throw new Error("Failed to fetch books");
+    }
+
+    messageApi.open({ type: "success", content: "Books deleted successfully" });
+  } catch (error) {
+    messageApi.open({ type: "error", content: error.message });
+  }
+};
+
 
   // Reject a report
   const handleReject = async (reportId: number) => {

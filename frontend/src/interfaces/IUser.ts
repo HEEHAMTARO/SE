@@ -21,5 +21,9 @@ export interface UsersInterface {
     Password?: string;
 
     Profile?: string;
+
+    SemesterID?: number;
+
+    YearOfStudy?: number;
   
   }

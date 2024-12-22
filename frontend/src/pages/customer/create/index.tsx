@@ -337,6 +337,82 @@ import {
 
               <Col xs={24} sm={24} md={24} lg={24} xl={12}>
   
+                <Form.Item
+  
+                  label="semester_id"
+  
+                  name="semester_id"
+  
+                  rules={[
+  
+                    {
+  
+                      required: true,
+  
+                      message: "กรุณากรอกsemester_id !",
+  
+                    },
+  
+                  ]}
+  
+                >
+  
+                  <InputNumber
+  
+                    min={1}
+  
+                    max={2}
+  
+                    defaultValue={0}
+  
+                    style={{ width: "100%" }}
+  
+                  />
+  
+                </Form.Item>
+  
+              </Col>
+
+              <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+  
+                <Form.Item
+  
+                  label="YearOfStudy"
+  
+                  name="YearOfStudy"
+  
+                  rules={[
+  
+                    {
+  
+                      required: true,
+  
+                      message: "กรุณากรอกYearOfStudy !",
+  
+                    },
+  
+                  ]}
+  
+                >
+  
+                  <InputNumber
+  
+                    min={1}
+  
+                    max={9999}
+  
+                    defaultValue={0}
+  
+                    style={{ width: "100%" }}
+  
+                  />
+  
+                </Form.Item>
+  
+              </Col>
+
+              <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+  
               <Form.Item
   label="Wages"
   name="wages"

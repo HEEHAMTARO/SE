@@ -5,6 +5,7 @@ import (
 
    "net/http"
 
+    "time"
 
    "example.com/sa-67-example/config"
 
@@ -146,4 +147,18 @@ func Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Admin created successfully", "admin": newBooks})
+}
+
+func Delete(c *gin.Context) {
+    id := c.Param("id")
+
+    db := config.DB()
+
+    // ใช้ `UPDATE` เพื่ออัปเดตฟิลด์ `deleted_at` เป็นเวลาปัจจุบัน
+    if tx := db.Exec("UPDATE books SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL", time.Now(), id); tx.RowsAffected == 0 {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "id not found or already deleted"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Soft Deleted successfully"})
 }
