@@ -1,21 +1,26 @@
 export interface PaymentInterface {
+    users: any;
+
+    dorm: any;
 
     ID?: number;
 
-    UsersID?: number;
+    users_id?: number;
 
-    Wages?: number;
+    wages?: number;
 
-    DormitoryID?: number;
+    dormitory_id?: number;
 
-    StatusDor?: string;
+    statusdor?: string;
 
-    StatusStudent?: string;
+    statusstudent?: string;
 
-    TermStudent?: number;
+    termstudent?: number;
 
-    YearStudent?: number;
+    yearstudent?: number;
 
-    WagesStudent?: number;
+    wagesstudent?: number;
+
+    credit?: number;
   
   }

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { CreatePayment, GetPayment, UpdatePaymentById } from '../../../services/https/index';
 import axios from 'axios';
-import { Button, Card, message } from 'antd';
+import { Button, Card, message, Row, Col } from 'antd';
 import { PaymentInterface } from "../../../interfaces/Payment";
 import { Link, useNavigate } from "react-router-dom";
 
 function QR() {
+  const navigate = useNavigate();
   const [qrCodeUrls, setQrCodeUrls] = useState<{ [key: number]: string }>({});
   const [payment, setPayment] = useState<PaymentInterface[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
@@ -125,17 +126,32 @@ function QR() {
                           marginBottom: '20px',
                         }}
                       />
+                      <p>กำลังสร้าง QR Code...{pay.ID}</p>
                       <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>PromptPay QR Code</h2>
-                      <Link to="/PayUI">
-                        <Button
-                          type="primary"
-                          size="large"
-                          onClick={() => handleCompletePayment(pay.ID)}
-                          disabled={pay.statusdor === "ชำระเสร็จสิ้น"}
-                        >
-                          {pay.statusdor === "ชำระเสร็จสิ้น" ? "ชำระเสร็จสิ้นแล้ว" : "เสร็จสิ้น"}
-                        </Button>
-                      </Link>
+                      <Row gutter={16}>
+                <Col span={12}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => handleCompletePayment(pay.ID)}
+                    disabled={pay.statusdor === "ชำระเสร็จสิ้น"}
+                    block
+                  >
+                    {pay.statusdor === "ชำระเสร็จสิ้น" ? "ชำระเสร็จสิ้นแล้ว" : "เสร็จสิ้น"}
+                  </Button>
+                </Col>
+                <Col span={12}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    block
+                    onClick={() => navigate(`/PayUI/DorRe/${pay.ID}`)}
+                    disabled={pay.statusdor === "ชำระเสร็จสิ้น"}
+                  >
+                    Receiptหอพัก
+                  </Button>
+                </Col>
+              </Row>
                     </>
                   ) : (
                     <p>กำลังสร้าง QR Code...</p>

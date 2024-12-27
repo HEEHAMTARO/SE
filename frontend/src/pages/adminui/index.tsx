@@ -49,37 +49,44 @@ const Adminui = () => {
 
   // Approve a report
   // Approve a report and delete books associated with the user
-const handleApprove = async (reportId: number) => {
-  try {
-    // Call the function to update report status
-    await updateReportStatus(reportId, "approve");
-
-    // Find the report by ID
-    const reportToApprove = report.find((rep) => rep.ID === reportId);
-    if (!reportToApprove || !reportToApprove.users_id) {
-      throw new Error("Report or user ID not found");
-    }
-
-    // Fetch books and filter by user ID
-    const booksResponse = await GetBooks();
-    if (booksResponse.status === 200) {
-      const booksToDelete = booksResponse.data.filter(
-        (books) => books.student_id === reportToApprove.users_id
-      );
-
-      // Delete each book that matches
-      for (const book of booksToDelete) {
-        await DeleteBooksById(book.ID);
+  const handleApprove = async (reportId: number) => {
+    try {
+      // Call the function to update report status
+      await updateReportStatus(reportId, "approve");
+  
+      // Find the report by ID
+      const reportToApprove = report.find((rep) => rep.ID === reportId);
+      if (!reportToApprove || !reportToApprove.users_id) {
+        throw new Error("Report or user ID not found");
       }
-    } else {
-      throw new Error("Failed to fetch books");
+  
+      // Fetch books and filter by user ID
+      const booksResponse = await GetBooks();
+      if (booksResponse.status === 200) {
+        const booksToDelete = booksResponse.data.filter(
+          (books) => books.student_id === reportToApprove.users_id
+        );
+  
+        // Delete each book that matches
+        for (const book of booksToDelete) {
+          await DeleteBooksById(book.ID);
+        }
+      } else {
+        throw new Error("Failed to fetch books");
+      }
+  
+      messageApi.open({ type: "success", content: "Books deleted successfully" });
+    } catch (error: unknown) {
+      // Type guard to check if error is an instance of Error
+      if (error instanceof Error) {
+        messageApi.open({ type: "error", content: error.message });
+      } else {
+        // Handle unexpected errors
+        messageApi.open({ type: "error", content: "An unknown error occurred" });
+      }
     }
-
-    messageApi.open({ type: "success", content: "Books deleted successfully" });
-  } catch (error) {
-    messageApi.open({ type: "error", content: error.message });
-  }
-};
+  };
+  
 
 
   // Reject a report
@@ -201,7 +208,7 @@ const styles = {
     padding: "20px",
     minHeight: "100vh",
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column" as const,
     alignItems: "center",
   },
   profileContainer: {
@@ -214,7 +221,7 @@ const styles = {
   NameContainer: {
     marginBottom: "50px",
   },
-  profileImage: { width: "100%", height: "100%", objectFit: "cover" },
+  profileImage: { width: "100%", height: "100%", objectFit: "cover" as "cover" },
   gridContainer: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
@@ -223,7 +230,7 @@ const styles = {
     maxWidth: "1200px",
   },
   card: {
-    textAlign: "center",
+    textAlign: "center" as "center",
     borderRadius: "8px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
     padding: "15px",
@@ -235,8 +242,8 @@ const styles = {
     overflow: "hidden",
     margin: "0 auto 10px",
   },
-  userImage: { width: "100%", height: "100%", objectFit: "cover" },
-  reportImage: { width: "100%", height: "150px", objectFit: "cover", margin: "10px 0" },
+  userImage: { width: "100%", height: "100%", objectFit: "cover" as "cover", },
+  reportImage: { width: "100%", height: "150px", objectFit: "cover" as "cover", margin: "10px 0" },
   buttonContainer: { display: "flex", justifyContent: "space-between" },
-  noReportsText: { gridColumn: "span 3", textAlign: "center" },
+  noReportsText: { gridColumn: "span 3", textAlign: "center" as "center" },
 };

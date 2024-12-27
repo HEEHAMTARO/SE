@@ -1,10 +1,15 @@
 export interface ReportInterface {
+    dreport: string | number | Date | null | undefined;
+    dapprove: string | number  | Date | null | undefined;
+    users: any;
+    room: any;
+    dorm: any;
 
     ID?: number;
   
-    Note?: string;
+    note?: string;
 
-    Contact?: string;
+    contact?: string;
 
     Photo?: string;
 
@@ -12,16 +17,16 @@ export interface ReportInterface {
 
     DateApprove?: string;
   
-    Status?: string;
+    status?: string;
   
-    AdminID?: number;
+    admin_id?: number;
 
-    UsersID?: number;
+    users_id?: number;
 
-    DormitoryID?: number;
+    dormitory_id?: number;
 
-    BooksID?: number;
+    books_id?: number;
 
-    RoomID?: number;
+    room_id?: number;
   
   }

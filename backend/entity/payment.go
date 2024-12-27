@@ -31,4 +31,7 @@ type Payment struct {
 
    YearStudent int    `json:"yearstudent"`
 
+   Credit int    `json:"credit"`
+   
+
 }

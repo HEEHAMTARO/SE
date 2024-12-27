@@ -187,6 +187,18 @@ async function GetUsersById(id: string) {
 
 }
 
+async function GetPaymentById(id: string) {
+
+  return await axios
+
+    .get(`${apiUrl}/payment/${id}`, requestOptions)
+
+    .then((res) => res)
+
+    .catch((e) => e.response);
+
+}
+
 async function GetReportById(id: string) {
 
   return await axios
@@ -322,7 +334,7 @@ async function CreateCourse(data: CourseInterface) {
 }
 
 
-async function CreatePayment(data: ReportInterface) {
+async function CreatePayment(data: PaymentInterface) {
 
   return await axios
 
@@ -442,5 +454,7 @@ export {
   CreateEnrollment,
 
   DeleteBooksById,
+
+  GetPaymentById,
 
 };

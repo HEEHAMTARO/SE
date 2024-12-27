@@ -61,6 +61,9 @@ const QRwages = Loadable(lazy(() => import("../pages/PayUI/QRwages")));
 
 const Dorqrcode = Loadable(lazy(() => import("../pages/payment/Dorqrcode")));
 
+const Receipt = Loadable(lazy(() => import("../pages/PayUI/Receipt")));
+
+const DorRe = Loadable(lazy(() => import("../pages/PayUI/DorRe")));
 
 const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
 
@@ -271,6 +274,21 @@ const AdminRoutes = (isLoggedIn : boolean): RouteObject => {
             path: "/PayUI/QRwages",
 
             element: <QRwages />,
+
+          },
+
+          {
+
+            path: "/PayUI/Receipt/:id",
+
+            element: <Receipt />,
+
+          },
+          {
+
+            path: "/PayUI/DorRe/:id",
+
+            element: <DorRe />,
 
           },
 

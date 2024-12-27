@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { CreatePayment, GetPayment, UpdatePaymentById } from '../../../services/https/index';
 import axios from 'axios';
-import { Button, Card, message } from 'antd';
+import { Button, Card, message, Col, Row } from 'antd';
 import { PaymentInterface } from "../../../interfaces/Payment";
 import { Link, useNavigate } from "react-router-dom";
 
 function QRwages() {
+  const navigate = useNavigate();
   const [qrCodeUrls, setQrCodeUrls] = useState<{ [key: number]: string }>({});
   const [payment, setPayment] = useState<PaymentInterface[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
@@ -105,50 +106,65 @@ function QRwages() {
       }}
     >
       {payment.length > 0 ? (
-        payment.some(pay => pay.statusstudent !== "ชำระเสร็จสิ้น") ? (
-          payment.map((pay) =>
-            pay.statusstudent !== "ชำระเสร็จสิ้น" ? (
-              <div key={pay.ID} style={{ marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>
-                  เทอม {pay.termstudent} / {pay.yearstudent}
-                </h2>
-                {qrCodeUrls[pay.ID] ? (
-                  <>
-                    <img
-                      src={qrCodeUrls[pay.ID]}
-                      alt="QR Code"
-                      style={{
-                        width: '100%',
-                        height: 'auto',
-                        maxHeight: '500px',
-                        objectFit: 'contain',
-                        marginBottom: '20px',
-                      }}
-                    />
-                    <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>PromptPay QR Code</h2>
-                    <Link to="/PayUI">
-                      <Button
-                        type="primary"
-                        size="large"
-                        onClick={() => handleCompletePayment(pay.ID)}
-                        disabled={pay.statusstudent === "ชำระเสร็จสิ้น"}
-                      >
-                        {pay.statusstudent === "ชำระเสร็จสิ้น" ? "ชำระเสร็จสิ้นแล้ว" : "เสร็จสิ้น"}
-                      </Button>
-                    </Link>
-                  </>
-                ) : (
-                  <p>กำลังสร้าง QR Code...</p>
-                )}
-              </div>
-            ) : null
-          )
-        ) : (
-          <p>ไม่มีการค้างชำระ</p>
-        )
-      ) : (
-        <p>ไม่พบข้อมูลการชำระเงิน</p>
-      )}
+  payment.some(pay => pay.statusstudent !== "ชำระเสร็จสิ้น") ? (
+    payment.map((pay) =>
+      pay.statusstudent !== "ชำระเสร็จสิ้น" ? (
+        <div key={pay.ID} style={{ marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>
+            เทอม {pay.termstudent} / {pay.yearstudent}
+          </h2>
+          {qrCodeUrls[pay.ID] ? (
+            <>
+              <img
+                src={qrCodeUrls[pay.ID]}
+                alt="QR Code"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '500px',
+                  objectFit: 'contain',
+                  marginBottom: '20px',
+                }}
+              />
+              <p>กำลังสร้าง QR Code...{pay.ID}</p>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>PromptPay QR Code</h2>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => handleCompletePayment(pay.ID)}
+                    disabled={pay.statusstudent === "ชำระเสร็จสิ้น"}
+                    block
+                  >
+                    {pay.statusstudent === "ชำระเสร็จสิ้น" ? "ชำระเสร็จสิ้นแล้ว" : "เสร็จสิ้น"}
+                  </Button>
+                </Col>
+                <Col span={12}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    block
+                    onClick={() => navigate(`/PayUI/Receipt/${pay.ID}`)}
+                    disabled={pay.statusstudent === "ชำระเสร็จสิ้น"}
+                  >
+                    Receiptหอพัก
+                  </Button>
+                </Col>
+              </Row>
+            </>
+          ) : (
+            <p>กำลังสร้าง QR Code...</p>
+          )}
+        </div>
+      ) : null
+    )
+  ) : (
+    <p>ไม่มีการค้างชำระ</p>
+  )
+) : (
+  <p>ไม่พบข้อมูลการชำระเงิน</p>
+)}
     </Card>
     {contextHolder}
   </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, message, Upload, DatePicker, Select, Divider } from "antd";
+import { Form, Input, Button, Card, message, Upload, DatePicker, Select, Divider, UploadFile } from "antd";
 import { useNavigate } from "react-router-dom";
 import { 
   GetUsers, 
@@ -42,6 +42,10 @@ const ReportUI = () => {
     return matchingBook ? matchingBook.ID : null;
   };
 
+  interface CustomUploadFile extends UploadFile {
+    base64?: string;
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -77,35 +81,50 @@ const ReportUI = () => {
   //   return isImage;
   // };
 
-  const onPreview = async (file) => {
+  const onPreview = async (file: UploadFile) => {
     let src = file.url;
-    if (!src) {
-      src = await new Promise((resolve) => {
+  
+    if (!src && file.originFileObj) {
+      src = await new Promise<string>((resolve) => {
         const reader = new FileReader();
-        reader.readAsDataURL(file.originFileObj);
-        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file.originFileObj as Blob);
+        reader.onload = () => resolve(reader.result as string);
       });
     }
-    const imgWindow = window.open(src);
-    imgWindow.document.write(`<img src="${src}" />`);
+  
+    if (src) {
+      const imgWindow = window.open(src);
+      if (imgWindow) {
+        imgWindow.document.write(`<img src="${src}" style="max-width: 100%;" />`);
+      } else {
+        console.error("Failed to open a new window.");
+      }
+    } else {
+      console.error("No source available for preview.");
+    }
   };
 
   const onFinish = async (values: ReportInterface) => {
     try {
       const myId = localStorage.getItem("id");
       if (!myId) throw new Error("User ID not found in localStorage");
-
+  
       const payload: ReportInterface = {
         users_id: Number(myId),
         note: values.note,
         contact: values.contact,
         Photo: fileList[0]?.base64 || "", // Save the base64 string of the image
         dreport: values.dreport,
-        room_id: selectedRoom,
-        dormitory_id: selectedDormitory,
-        books_id: calculateBooksId(), // Automatically calculate books_id
+        room_id: Number(selectedRoom),
+        dormitory_id: Number(selectedDormitory),
+        books_id: calculateBooksId() ?? 0, // Automatically calculate books_id
+        // Providing values for missing fields
+        dapprove: values.dapprove ?? null, // Assuming null if not provided
+        users: values.users ?? null,       // Assuming null if not provided
+        room: values.room ?? null,         // Assuming null if not provided
+        dorm: values.dorm ?? null,         // Assuming null if not provided
       };
-
+  
       const response = await CreateReport(payload);
       if (response.status === 201) {
         throw new Error("Failed to create report");
@@ -117,17 +136,21 @@ const ReportUI = () => {
       messageApi.open({ type: "error", content: error.message || "An error occurred" });
     }
   };
+  
 
-  const handleImageChange = async ({ fileList: newFileList }) => {
+  const handleImageChange = async ({ fileList: newFileList }: { fileList: CustomUploadFile[] }) => {
     setFileList(newFileList);
+    
     if (newFileList.length > 0) {
-      const file = newFileList[0].originFileObj;
+      const file = newFileList[0].originFileObj as File; // Ensure the file is of type File
       const reader = new FileReader();
+      
       reader.onloadend = () => {
         const base64String = reader.result as string;
         newFileList[0].base64 = base64String; // Save the base64 string in the fileList
-        setFileList(newFileList);
+        setFileList([...newFileList]); // Use a new array reference to trigger React state updates
       };
+      
       reader.readAsDataURL(file);
     } else {
       setFileList([]); // Clear the fileList if the user deletes the uploaded file
@@ -272,7 +295,7 @@ const ReportUI = () => {
         const admin = admins.find((admin) => admin.ID === report.admin_id); // Find the admin by ID
         return (
           <div
-            key={report.id}
+            key={report.ID}
             style={{
               borderBottom: "1px solid #eee",
               padding: "10px 0",

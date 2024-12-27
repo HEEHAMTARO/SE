@@ -35,6 +35,8 @@ import Enrollment from "../../pages/enrollment";
 import RoomEnrollment from "../../pages/enrollment/create";
 import BooksCreate from "../../pages/books/create";
 import Dorqrcode from "../../pages/payment/Dorqrcode";
+import Receipt from "../../pages/PayUI/Receipt";
+import DorRe from "../../pages/PayUI/DorRe";
 
 const { Header, Content, Footer } = Layout;
 
@@ -136,6 +138,8 @@ const FullLayout: React.FC = () => {
           <Route path="/PayUI" element={<PayUI />} />
           <Route path="/PayUI/QR" element={<QR />} />
           <Route path="/PayUI/QRwages" element={<QRwages />} />
+          <Route path="/PayUI/Receipt/:id" element={<Receipt />} />
+          <Route path="/PayUI/DorRe/:id" element={<DorRe />} />
           <Route path="/course" element={<Course />} />
           <Route path="/course/create" element={<RoomCourse />} />
           <Route path="/enrollment" element={<Enrollment />} />

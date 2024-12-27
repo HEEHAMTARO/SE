@@ -116,6 +116,8 @@ func main() {
 
        router.GET("/payments", payment.GetAll)
 
+       router.GET("/payment/:id", payment.Get)
+
        router.PUT("/payment/:id", payment.Update) //payment
 
        router.POST("/dormitory", dormitory.Create)

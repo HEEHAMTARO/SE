@@ -64,6 +64,12 @@ function Payment() {
     dataIndex: "yearstudent",
   },
   {
+    title: "Credit",
+    dataIndex: "credit",
+    key: "credit",
+    render: (value) => value.toFixed(2),
+  },
+  {
     title: "WagesPayment",
     dataIndex: "wages",
     key: "wages",

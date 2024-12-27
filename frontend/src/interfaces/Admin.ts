@@ -2,9 +2,9 @@ export interface AdminInterface {
 
     ID?: number;
   
-    FirstName?: string;
+    first_name?: string;
 
-    LirstName?: string;
+    last_name?: string;
 
     Profile?: string;
   

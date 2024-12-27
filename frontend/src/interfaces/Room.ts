@@ -1,4 +1,5 @@
 export interface RoomInterface {
+    Dormitory: any;
 
     ID?: number;
     RoomNumber?: string;

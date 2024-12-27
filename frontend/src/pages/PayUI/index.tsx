@@ -179,6 +179,28 @@ const PayUI: React.FC = () => {
     return dormInfo ? dormInfo.Price : null;
   };
 
+  const getDormDetails = async (dormID: number | undefined): Promise<DormitoryInterface | undefined> => {
+    if (!dormID) {
+      console.error("Dorm ID is undefined.");
+      return undefined;
+    }
+  
+    try {
+      // Replace the URL with the actual endpoint to fetch dormitory details
+      const response = await fetch(`/api/dormitories/${dormID}`);
+      if (response.ok) {
+        const dorm: DormitoryInterface = await response.json();
+        return dorm;
+      } else {
+        console.error(`Failed to fetch dormitory details for ID: ${dormID}`);
+        return undefined;
+      }
+    } catch (error) {
+      console.error("Error fetching dormitory details:", error);
+      return undefined;
+    }
+  };
+
 
   const getPaymentDorStatus = (studentId: number, semesterId: number, yearOfStudy: number) => {
     if (studentId.toString() !== myId) return null;
@@ -191,6 +213,19 @@ const PayUI: React.FC = () => {
     );
   
     return paymentInfo ? paymentInfo.statusdor : null;
+  };
+
+  const getPaymentID = (studentId: number, semesterId: number, yearOfStudy: number) => {
+    if (studentId.toString() !== myId) return null;
+  
+    const paymentInfo = payment.find(
+      (p) =>
+        p.users_id === studentId &&
+        p.termstudent === semesterId &&
+        p.yearstudent === yearOfStudy
+    );
+  
+    return paymentInfo ? paymentInfo.ID : null;
   };
 
   const getPaymentStudentStatus = (studentId: number, semesterId: number, yearOfStudy: number) => {
@@ -210,30 +245,38 @@ const PayUI: React.FC = () => {
   const handleDormitoryPayment = async (user: UsersInterface) => {
     const dormID = getDormID(user.ID);
     const dormPrice = getDormPrice(user.ID);
-
-    if (!dormID || !dormPrice) {
+    const dorm = getDormDetails(dormID);
+  
+    if (!dormID || !dormPrice || !user.ID || user.YearOfStudy === undefined) {
       messageApi.open({
         type: "error",
         content: "ข้อมูลหอพักไม่ครบถ้วน",
       });
       return;
     }
-
-    // Find existing payment based on users_id and check semester_id and YearOfStudy match
+  
     const existingPayment = payment.find(
       (p) =>
         p.users_id === user.ID &&
         p.yearstudent === user.YearOfStudy &&
         p.termstudent === user.semester_id
     );
-
+  
     if (existingPayment) {
-      // If the payment exists and semester_id and YearOfStudy match, update the payment
-      const updatedPayment = {
+      if (!existingPayment.ID) {
+        messageApi.open({
+          type: "error",
+          content: "ไม่พบ ID ของการชำระเงินที่ต้องการอัปเดต",
+        });
+        return;
+      }
+  
+      const updatedPayment: PaymentInterface = {
         ...existingPayment,
-        wages: dormPrice,
+        wages: dormPrice, // Ensure this matches the interface
       };
-      const res = await UpdatePaymentById(existingPayment.ID, updatedPayment);
+  
+      const res = await UpdatePaymentById(existingPayment.ID.toString(), updatedPayment);
       if (res.status === 200) {
         messageApi.open({
           type: "success",
@@ -246,14 +289,16 @@ const PayUI: React.FC = () => {
         });
       }
     } else {
-      // If no matching payment is found, create a new payment
-      const paymentData = {
+      const paymentData: PaymentInterface = {
         users_id: user.ID,
-        dormitory_id: dormID,
-        wages: dormPrice,
-        termstudent: user.semester_id, // semester_id as termstudent
-        yearstudent: user.YearOfStudy, // YearOfStudy as yearstudent
+        dormitory_id: dormID, // Convert to string
+        wages: Number(dormPrice), // Ensure this matches the interface
+        termstudent: user.semester_id || "",
+        yearstudent: user.YearOfStudy,
+        users: user,
+        dorm: dorm,
       };
+  
       const res = await CreatePayment(paymentData);
       if (res.status === 200) {
         messageApi.open({
@@ -267,34 +312,47 @@ const PayUI: React.FC = () => {
         });
       }
     }
-};
+  };
+  
 
 
   const handleCoursePayment = async (user: UsersInterface) => {
     const courseID = getCoursePrice(user.ID, user.semester_id);
     const dormID = getDormID(user.ID);
-
-    if (!courseID) {
+    const creditID = getCourseDetails(user.ID, user.semester_id);
+    const dorm = getDormDetails(dormID);
+  
+    if (courseID === undefined || dormID === undefined || creditID === undefined) {
       messageApi.open({
         type: "error",
         content: "ข้อมูลหอค่าเทอมไม่ครบถ้วน",
       });
       return;
     }
-
+  
     const existingPayment = payment.find(
       (p) =>
         p.users_id === user.ID &&
         p.yearstudent === user.YearOfStudy &&
         p.termstudent === user.semester_id
     );
+  
     if (existingPayment) {
-      // Update payment if it already exists
-      const updatedPayment = {
+      if (existingPayment.ID === undefined) {
+        messageApi.open({
+          type: "error",
+          content: "ไม่พบ ID ของการชำระเงินที่ต้องการอัปเดต",
+        });
+        return;
+      }
+  
+      const updatedPaymentstudent: PaymentInterface = {
         ...existingPayment,
-        wagesstudent: courseID,
+        wagesstudent: Number(courseID),
+        credit: Number(creditID),
       };
-      const res = await UpdatePaymentById(existingPayment.ID, updatedPayment);
+  
+      const res = await UpdatePaymentById(existingPayment.ID.toString(), updatedPaymentstudent);
       if (res.status === 200) {
         messageApi.open({
           type: "success",
@@ -307,14 +365,17 @@ const PayUI: React.FC = () => {
         });
       }
     } else {
-      // Create new payment if it doesn't exist
-      const paymentData = {
+      const paymentData: PaymentInterface = {
         users_id: user.ID,
-        wagesstudent: courseID,
+        wagesstudent: Number(courseID),
         dormitory_id: dormID,
-        termstudent: user.semester_id, // semester_id as termstudent
-        yearstudent: user.YearOfStudy, // YearOfStudy as yearstudent
+        credit: Number(creditID),
+        termstudent: user.semester_id,
+        yearstudent: user.YearOfStudy,
+        users: user, // Add user data
+        dorm: dorm,
       };
+  
       const res = await CreatePayment(paymentData);
       if (res.status === 200) {
         messageApi.open({
@@ -330,6 +391,9 @@ const PayUI: React.FC = () => {
     }
   };
 
+
+  
+
   const getCourseDetails = (myId: number, semesterId: number) => {
     // หาทุก enrollment ที่มี student_id ตรงกับ myId และ semester_id ตรงกับ semesterId
     const userEnrollments = enrollment.filter(
@@ -344,11 +408,11 @@ const PayUI: React.FC = () => {
           const courseDetails = course.find((c) => c.ID === enrollmentItem.CourseID);
           return courseDetails ? courseDetails.Credit : null; // ถ้าไม่พบ course จะได้ null
         })
-        .filter((credit) => credit !== null); // กรองค่า null ออก
+        .filter((credit): credit is number => credit !== null); // กรองค่า null ออก
   
       // ถ้ามี Credit ของ Course ให้รวมทั้งหมด
       if (courseCredits.length > 0) {
-        const totalCredits = courseCredits.reduce((acc, credit) => acc + credit, 0);
+        const totalCredits = courseCredits.reduce((acc, credit) => acc + credit, 0); // กำหนดค่าเริ่มต้นเป็น 0
         return totalCredits; // ส่งผลรวมของ Credit
       } else {
         return "ไม่พบข้อมูล";
@@ -357,31 +421,34 @@ const PayUI: React.FC = () => {
   
     return "ไม่พบข้อมูล";
   };
+
   const getCoursePrice = (myId: number, semesterId: number) => {
-    // หาทุก enrollment ที่มี student_id ตรงกับ myId
+    // Find all enrollments where StudentID matches myId and semester_id matches
     const userEnrollments = enrollment.filter(
       (e) => e.StudentID === myId && e.semester_id === semesterId
     );
   
-    // ถ้ามีการลงทะเบียน
+    // If there are enrollments
     if (userEnrollments.length > 0) {
-      // หา Credit ของ Course ที่ตรงกับ course_id ของแต่ละ enrollment
-      const courseCredits = userEnrollments.map((enrollmentItem) => {
-        const courseDetails = course.find((c) => c.ID === enrollmentItem.CourseID);
-        return courseDetails ? courseDetails.Credit : null; // ถ้าไม่พบ course จะได้ null
-      }).filter(credit => credit !== null); // กรองค่า null ออก
+      // Get the Credit of the Course matching each enrollment's CourseID
+      const courseCredits = userEnrollments
+        .map((enrollmentItem) => {
+          const courseDetails = course.find((c) => c.ID === enrollmentItem.CourseID);
+          return courseDetails ? courseDetails.Credit : null; // Return Credit or null if not found
+        })
+        .filter((credit): credit is number => credit !== null); // Filter out null values and ensure type is number
   
-      // ถ้ามี Credit ของ Course ให้รวมทั้งหมด
+      // If there are Credits
       if (courseCredits.length > 0) {
-        const totalCredits = courseCredits.reduce((acc, credit) => acc + credit, 0);
-        return totalCredits * 600; // คูณผลรวมของ Credit ด้วย 400
+        const totalCredits = courseCredits.reduce((acc, credit) => acc + credit, 0); // Initialize acc as 0
+        return totalCredits * 600; // Multiply total credits by 600
       } else {
-        return "ไม่พบข้อมูล";
+        return "ไม่พบข้อมูล"; // No course credits found
       }
     }
   
-    return "ไม่พบข้อมูล";
-};
+    return "ไม่พบข้อมูล"; // No enrollments found
+  };
 
   
 
@@ -415,147 +482,147 @@ const PayUI: React.FC = () => {
       >
         {/* Left column: Dormitory Payment */}
         {filteredUsers.map((user, index) => (
-          <Card
-            key={`user-${index}`}
-            style={{
-              width: 300,
-              borderRadius: "8px",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-            }}
-            cover={
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#d9d9d9",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {user?.Profile ? (
-                  <img
-                    src={user.Profile}
-                    alt="Profile"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <div style={{ color: "white" }}>No Profile Image</div>
-                )}
-              </div>
-            }
-          >
-            <div style={{ padding: "10px" }}>
-              <p>
-                <h3>
-                  <center>ชำระเงินค่าหอพัก</center>
-                </h3>
-              </p>
-              <p>
-                <strong>Name:</strong> {user?.FirstName} {user?.last_name}
-              </p>
-              <p>
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p>
-                <strong>Status:</strong> {getReportStatus(user.ID)}
-              </p>
-              <p>
-                <strong>Term:</strong> {user.semester_id}
-              </p>
-              <p>
-                <strong>DormID:</strong> {getDormID(user.ID) || "ไม่พบข้อมูล"}
-              </p>
-              <p>
-                <strong>หอพัก:</strong> {getDormName(user.ID) || "ไม่พบข้อมูล"}
-              </p>
-              <p>
-                <strong>ยอดชำระ:</strong> {getDormPrice(user.ID) || "ไม่พบข้อมูล"} บาท
-              </p>
-              <p>
-                <strong>สถานะการชำระ:</strong> {getPaymentDorStatus(user.ID, user.semester_id, user.YearOfStudy) || "-"}
-              </p>
-              <Link to="/PayUI/QR">
-              <Button
-    type="primary"
-    block
-    onClick={getReportStatus(user.ID) !== "approve" ? () => handleDormitoryPayment(user) : undefined}
+  <Card
+    key={`user-${index}`}
+    style={{
+      width: 300,
+      borderRadius: "8px",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    }}
+    cover={
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "#d9d9d9",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {user?.Profile ? (
+          <img
+            src={user.Profile}
+            alt="Profile"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <div style={{ color: "white" }}>No Profile Image</div>
+        )}
+      </div>
+    }
   >
-    ชำระเงินหอพัก
-  </Button>
-              </Link>
-            </div>
-          </Card>
-        ))}
+    <div style={{ padding: "10px" }}>
+      <h3>
+        <center>ชำระเงินค่าหอพัก</center>
+      </h3>
+      <p>
+        <strong>Name:</strong> {user?.FirstName} {user?.last_name}
+      </p>
+      <p>
+        <strong>Email:</strong> {user.email}
+      </p>
+      <p>
+        <strong>Status:</strong> {getReportStatus(user.ID ?? -1)}
+      </p>
+      <p>
+        <strong>Term:</strong> {user.semester_id}
+      </p>
+      <p>
+        <strong>DormID:</strong> {getDormID(user.ID ?? -1) || "ไม่พบข้อมูล"}
+      </p>
+      <p>
+        <strong>หอพัก:</strong> {getDormName(user.ID ?? -1) || "ไม่พบข้อมูล"}
+      </p>
+      <p>
+        <strong>ยอดชำระ:</strong> {getDormPrice(user.ID ?? -1) || "ไม่พบข้อมูล"} บาท
+      </p>
+      <p>
+        <strong>สถานะการชำระ:</strong> {getPaymentDorStatus(user.ID ?? -1, user.semester_id, user.YearOfStudy) || "-"}
+      </p>
+      <p>
+        <strong>PaymentID:</strong> {getPaymentID(user.ID ?? -1, user.semester_id, user.YearOfStudy) || "-"}
+      </p>
+      <Link to="/PayUI/QR">
+        <Button
+          type="primary"
+          block
+          onClick={getReportStatus(user.ID ?? -1) !== "approve" ? () => handleDormitoryPayment(user) : undefined}
+        >
+          ชำระเงินหอพัก
+        </Button>
+      </Link>
+    </div>
+  </Card>
+))}
+
 
         {/* Right column: Tuition Payment */}
         {filteredUsers.map((user, index) => (
-          <Card
-            key={`user-${index}`}
-            style={{
-              width: 300,
-              borderRadius: "8px",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-            }}
-            cover={
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#d9d9d9",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {user?.Profile ? (
-                  <img
-                    src={user.Profile}
-                    alt="Profile"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <div style={{ color: "white" }}>No Profile Image</div>
-                )}
-              </div>
-            }
-          >
-            <div style={{ padding: "10px" }}>
-              <p>
-                <h3>
-                  <center>ชำระเงินค่าเทอม</center>
-                </h3>
-              </p>
-              <p>
-                <strong>Name:</strong> {user?.FirstName} {user?.last_name}
-              </p>
-              <p>
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p>
-                <strong>Term:</strong> {user.semester_id}
-              </p>
-              <p>
-                <strong>หน่วยกิต:</strong> {getCourseDetails(user.ID, user.semester_id)}
-              </p>
-              <p>
-                <strong>ยอดชำระ:</strong> {getCoursePrice(user.ID, user.semester_id)} บาท
-              </p>
-              <p>
-                <strong>สถานะการชำระ:</strong> {getPaymentStudentStatus(user.ID, user.semester_id, user.YearOfStudy) || "-"}
-              </p>
-              <Link to="/PayUI/QRwages">
-              <Button
-                type="primary"
-                block
-                onClick={() => handleCoursePayment(user)}
-              >
-                ชำระเงินค่าเทอม
-              </Button>
-</Link>
-            </div>
-          </Card>
-        ))}
+  <Card
+    key={`user-${index}`}
+    style={{
+      width: 300,
+      borderRadius: "8px",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    }}
+    cover={
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "#d9d9d9",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {user?.Profile ? (
+          <img
+            src={user.Profile}
+            alt="Profile"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <div style={{ color: "white" }}>No Profile Image</div>
+        )}
+      </div>
+    }
+  >
+    <div style={{ padding: "10px" }}>
+      <h3>
+        <center>ชำระเงินค่าเทอม</center>
+      </h3>
+      <p>
+        <strong>Name:</strong> {user?.FirstName} {user?.last_name}
+      </p>
+      <p>
+        <strong>Email:</strong> {user.email}
+      </p>
+      <p>
+        <strong>Term:</strong> {user.semester_id}
+      </p>
+      <p>
+        <strong>หน่วยกิต:</strong> {getCourseDetails(user.ID ?? -1, user.semester_id)}
+      </p>
+      <p>
+        <strong>ยอดชำระ:</strong> {getCoursePrice(user.ID ?? -1, user.semester_id)} บาท
+      </p>
+      <p>
+        <strong>สถานะการชำระ:</strong> {getPaymentStudentStatus(user.ID ?? -1, user.semester_id, user.YearOfStudy) || "-"}
+      </p>
+      <Link to="/PayUI/QRwages">
+        <Button
+          type="primary"
+          block
+          onClick={() => handleCoursePayment(user)}
+        >
+          ชำระเงินค่าเทอม
+        </Button>
+      </Link>
+    </div>
+  </Card>
+))}
       </div>
     </div>
   );
